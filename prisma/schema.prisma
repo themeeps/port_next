@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AdminUser {
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  icon        String
+  image       String? // Vercel Blob URL; falls back to the gradient+icon placeholder when empty
+  tech        String // JSON-encoded string[]
+  githubUrl   String
+  liveUrl     String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SkillGroup {
+  id        String          @id @default(cuid())
+  title     String
+  icon      String
+  order     Int             @default(0)
+  skills    String? // JSON-encoded string[], used when there are no subgroups
+  subgroups SkillSubgroup[]
+}
+
+model SkillSubgroup {
+  id           String     @id @default(cuid())
+  label        String
+  skills       String // JSON-encoded string[]
+  order        Int        @default(0)
+  skillGroup   SkillGroup @relation(fields: [skillGroupId], references: [id], onDelete: Cascade)
+  skillGroupId String
+}
+
+model AboutContent {
+  id  String @id @default("about")
+  bio String
+}
+
+model AboutHighlight {
+  id    String @id @default(cuid())
+  icon  String
+  title String
+  desc  String
+  order Int    @default(0)
+}

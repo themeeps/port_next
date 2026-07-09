@@ -1,0 +1,150 @@
+Perubahan Navbar.tsx saat dikonversi ke Tailwind CSS
+=====================================================
+
+1. <nav>
+   - Sebelum: navbar navbar-expand-lg navbar-dark fixed-top navbar-custom
+   - Sesudah: navbar-custom fixed top-0 inset-x-0 z-50
+   - "navbar", "navbar-expand-lg", "navbar-dark", "fixed-top" (class Bootstrap)
+     dihapus karena tidak ada Bootstrap CSS ter-load; posisi fixed di-atas
+     dan layer index digantikan langsung dengan utility Tailwind
+     (fixed, top-0, inset-x-0, z-50).
+   - Class custom "navbar-custom" & "navbar-scrolled" dipertahankan, tapi
+     isinya di globals.css sudah ditulis ulang pakai @apply Tailwind.
+
+2. Wrapper dalam <nav>
+   - Sebelum: <div className="container">
+   - Sesudah: <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
+   - "container" (Bootstrap, butuh Bootstrap CSS) diganti max-w + mx-auto +
+     px-4 ala Tailwind. Layout flex row (logo kiri, menu kanan) dibuat manual
+     dengan flex items-center justify-between karena sebelumnya itu bawaan
+     class "navbar" Bootstrap.
+
+3. Brand/logo
+   - Sebelum: navbar-brand fw-bold text-gradient fs-3
+   - Sesudah: text-gradient text-2xl font-bold
+   - "navbar-brand" & "fw-bold"/"fs-3" (Bootstrap) diganti font-bold + text-2xl.
+     "text-gradient" tetap dipakai (custom class di globals.css).
+
+4. Tombol menu mobile (hamburger)
+   - Sebelum: navbar-toggler border-0 + data-bs-toggle="collapse"
+     data-bs-target="#navbarNav" + <span className="navbar-toggler-icon">
+   - Sesudah: <button> polos dengan 3 <span> (garis hamburger) yang dibuat
+     manual pakai utility (block w-6 h-0.5 bg-white mb-1.5).
+   - "data-bs-toggle"/"data-bs-target" dihapus karena itu hook untuk
+     Bootstrap JS (Collapse), yang tidak ada di project ini. Sebagai
+     gantinya, buka/tutup menu sekarang dikendalikan sendiri lewat React
+     state `isOpen` + onClick.
+
+5. Menu desktop
+   - Sebelum: <div className="collapse navbar-collapse" id="navbarNav">
+     <ul className="navbar-nav ms-auto align-items-lg-center">
+   - Sesudah: <ul className="hidden lg:flex items-center gap-2"> (langsung
+     tanpa div collapse, karena collapse Bootstrap tidak berfungsi tanpa JS-nya).
+   - Tiap link: "nav-link px-3 fw-semibold" -> "px-3 py-2 font-semibold
+     text-white/90 hover:text-white transition-colors" (warna & hover state
+     dibuat eksplisit, sebelumnya ikut warna default Bootstrap navbar-dark).
+
+6. Menu mobile (baru)
+   - Ditambahkan blok <ul> terpisah yang hanya muncul kalau isOpen true
+     (menggantikan fungsi collapse Bootstrap), dengan style
+     "lg:hidden flex flex-col bg-slate-900/95 backdrop-blur-md px-4 pb-4".
+   - Tiap link di menu mobile otomatis menutup menu saat diklik
+     (onClick={() => setIsOpen(false)}).
+
+7. Tombol "Dashboard" (Link ke /login)
+   - Sebelum: btn btn-gradient text-white px-4 py-2 fw-semibold rounded-pill
+     + inline style fontSize: 0.9rem
+   - Sesudah: btn-gradient text-white text-sm px-4 py-2 font-semibold
+     rounded-full
+   - "btn", "rounded-pill" (Bootstrap) -> dihapus/rounded-full; ukuran font
+     lewat inline style diganti utility text-sm. Link ini juga diduplikasi
+     ke versi menu mobile.
+
+Catatan umum:
+- Semua class Bootstrap (navbar-*, nav-*, btn, container, fw-*, fs-*,
+  ms-*, rounded-pill, dll) dihapus karena project ini cuma pakai Tailwind
+  CSS v4, tidak ada Bootstrap CSS/JS yang di-load.
+- Class custom lama (navbar-custom, navbar-scrolled, text-gradient,
+  btn-gradient) tetap dipakai namanya, tapi definisinya di
+  src/app/globals.css sekarang ditulis dengan @apply + utility Tailwind,
+  bukan CSS biasa.
+- Perilaku toggle menu mobile yang tadinya bergantung ke Bootstrap JS
+  (data-bs-toggle) sekarang murni React state (useState isOpen).
+
+
+Lanjutan: globals.css, HeroSection, AboutSection, SkillsSection
+=================================================================
+
+1. src/app/globals.css — konversi penuh ke Tailwind v4
+   - Ditambahkan `@import "tailwindcss";` di baris paling atas (sebelumnya
+     tidak ada sama sekali, jadi Tailwind belum pernah aktif di project ini).
+   - Semua class custom (bg-gradient-primary, text-gradient, btn-gradient,
+     card-hover, navbar-custom, navbar-scrolled, hero-section, social-icon,
+     skill-badge, project-image, form-control, icon-box, login-*,
+     dashboard-*, sidebar-*, user-*, stat-card, transaction-row,
+     notif-*, modal-*, dll) ditulis ulang pakai `@apply` + utility Tailwind,
+     bukan CSS biasa lagi (warna hex diganti token Tailwind yang cocok,
+     mis. #0ea5e9 -> sky-500, #2563eb -> blue-600, #0f172a -> slate-900).
+   - `@keyframes` (blobMove, blobPulse, bounce, fadeIn, slideUp,
+     slideInRight) dipindah ke dalam blok `@theme` dan didaftarkan lewat
+     `--animate-*` supaya bisa dipakai sebagai utility `animate-*`.
+   - `.opacity-60` (definisi manual `opacity: 0.6`) dihapus karena Tailwind
+     sudah otomatis menyediakan utility itu setelah `@tailwindcss` di-import.
+   - Font body diatur lewat `--font-sans` di `@theme` (bukan `font-family`
+     manual), supaya utility `font-sans` bawaan Tailwind ikut terupdate.
+
+2. Animasi blob pada hero-section
+   - Keyframe `blob-move` diubah dari 4 titik (0/25/50/75/100%) jadi 8 titik
+     (tiap 12.5%) supaya blob-nya bergerak jelas ke kiri-kanan sekaligus
+     atas-bawah (lintasan melingkar), bukan cuma diagonal seperti sebelumnya.
+
+3. src/app/components/HeroSection.tsx
+   - Sama seperti Navbar: semua class Bootstrap (container, row, col-lg-10,
+     d-flex, rounded-circle, display-3, fw-bold, fs-4, lead, btn,
+     btn-outline-*, rounded-pill, gap-*, mb-*, px-*, py-*, position-*,
+     start-50, translate-middle-x, dll) diganti utility Tailwind.
+   - Class custom (hero-section, bg-gradient-primary, text-gradient,
+     btn-gradient, social-icon, bounce-animation) tetap dipakai, ikut
+     definisi baru di globals.css.
+   - Spacing Bootstrap dipetakan ke skala Tailwind (mb-3->mb-4, mb-4->mb-6,
+     mb-5->mb-12, px-5->px-12, py-3->py-4, dst) supaya ukuran visualnya
+     tetap sama persis.
+
+4. src/app/components/AboutSection.tsx (baru)
+   - Section "About Me" dengan id="about" (match link Navbar), berisi foto
+     profil (dibingkai bg-gradient-primary), bio singkat, dan 3 kartu
+     highlight (Clean Code / Fast Delivery / Team Player) pakai icon dari
+     lucide-react. Reuse class custom yang sudah ada (icon-box, card-hover,
+     text-gradient) supaya konsisten dengan Hero & Navbar.
+
+5. src/app/components/SkillsSection.tsx (baru)
+   - Section "My Skills" dengan id="skills", isinya 3 kategori: Frontend
+     (JS, TS, React, Next.js, Tailwind, HTML/CSS), Backend (Node.js,
+     Express, PHP, Laravel, Python), Database (MySQL, PostgreSQL, MongoDB,
+     Redis) — tiap skill jadi badge pill pakai class `skill-badge`.
+   - Animasi scroll ala iOS: pakai `IntersectionObserver` (client component,
+     'use client') yang menambahkan class `is-visible` sekali saat grid
+     skill masuk viewport. Ditambahkan class reusable `.reveal` /
+     `.reveal.is-visible` di globals.css (opacity-0 + translate-y-6 +
+     scale-95 -> normal) dengan easing custom bentuk "spring/overshoot"
+     lewat `ease-[cubic-bezier(0.34,1.56,0.64,1)]`, dan tiap card diberi
+     `transitionDelay` bertahap (0ms/120ms/240ms) via inline style supaya
+     muncul berurutan (staggered), bukan bareng.
+   - `page.tsx` diupdate untuk merender <AboutSection /> lalu
+     <SkillsSection /> setelah <HeroSection />.
+
+6. Bug yang ditemukan & diperbaiki: animasi reveal sempat tidak muncul
+   - Percobaan pertama pakai token custom `--ease-ios` di `@theme` supaya
+     bisa dipakai sebagai utility `ease-ios` di dalam `@apply`. Ternyata di
+     versi Tailwind v4 yang dipakai project ini, custom `--ease-*` tidak
+     otomatis menghasilkan utility class `ease-ios` yang valid — akibatnya
+     `@apply ... ease-ios;` gagal, dan Tailwind DIAM-DIAM membuang seluruh
+     rule `.reveal` dari CSS hasil build (tanpa error/warning apa pun di
+     log). Efeknya: kartu skill langsung muncul tanpa animasi sama sekali.
+   - Diverifikasi langsung lewat dev server + Playwright (screenshot +
+     inspect computed style + cek isi CSS yang di-serve) untuk memastikan
+     rule `.reveal` benar-benar hilang dari output build.
+   - Perbaikan: ganti `ease-ios` jadi arbitrary value langsung
+     `ease-[cubic-bezier(0.34,1.56,0.64,1)]` (tidak bergantung ke custom
+     theme token), dan `--ease-ios` di `@theme` dihapus karena sudah tidak
+     dipakai. Setelah ini animasi reveal terkonfirmasi berjalan.

@@ -1,26 +1,340 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --animate-blob-1:
+    blob-move-1 18s ease-in-out infinite alternate,
+    blob-pulse 6s ease-in-out infinite;
+  --animate-blob-2:
+    blob-move-2 18s ease-in-out 5s infinite alternate,
+    blob-pulse 6s ease-in-out 5s infinite;
+  --animate-soft-bounce: soft-bounce 2s infinite;
+  --animate-fade-in: fade-in 0.2s ease;
+  --animate-slide-up: slide-up 0.25s ease;
+  --animate-slide-in-right: slide-in-right 0.3s ease;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Blob 1 starts top-left, sweeps right/down toward the section's center */
+  @keyframes blob-move-1 {
+    0% {
+      transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    25% {
+      transform: translate(320px, 220px) rotate(15deg) scale(1.15);
+    }
+    50% {
+      transform: translate(420px, 120px) rotate(-10deg) scale(1.25);
+    }
+    75% {
+      transform: translate(180px, 300px) rotate(20deg) scale(1.1);
+    }
+    100% {
+      transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+  }
+
+  /* Blob 2 starts bottom-right, sweeps left/up toward the section's center */
+  @keyframes blob-move-2 {
+    0% {
+      transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    25% {
+      transform: translate(-320px, -220px) rotate(-15deg) scale(1.15);
+    }
+    50% {
+      transform: translate(-420px, -120px) rotate(10deg) scale(1.25);
+    }
+    75% {
+      transform: translate(-180px, -300px) rotate(-20deg) scale(1.1);
+    }
+    100% {
+      transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+  }
+
+  @keyframes blob-pulse {
+    0%,
+    100% {
+      opacity: 0.35;
+      filter: blur(120px);
+    }
+    50% {
+      opacity: 0.6;
+      filter: blur(150px);
+    }
+  }
+
+  @keyframes soft-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 }
 
+html {
+  @apply scroll-smooth;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply antialiased font-sans;
+}
+
+button:not(:disabled) {
+  @apply cursor-pointer;
+}
+
+/* ── Shared brand gradient ── */
+.bg-gradient-primary,
+.text-gradient,
+.btn-gradient,
+.icon-box,
+.login-logo,
+.sidebar-nav-item.active,
+.user-avatar {
+  @apply bg-linear-to-br from-sky-500 to-blue-600;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent;
+}
+
+.btn-gradient {
+  @apply border-0 transition-all duration-300 ease-in-out;
+}
+
+.btn-gradient:hover {
+  @apply -translate-y-0.5 shadow-[0_10px_20px_rgba(14,165,233,0.3)];
+}
+
+.card-hover {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.card-hover:hover {
+  @apply -translate-y-2 shadow-[0_10px_30px_rgba(0,0,0,0.15)];
+}
+
+.navbar-custom {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.navbar-scrolled {
+  @apply bg-slate-900/95! backdrop-blur-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.1)];
+}
+
+/* ── Hero / login radial backdrop ── */
+.hero-section,
+.login-page {
+  @apply bg-radial-[at_20%_30%] from-[#0a0f1f] via-[#111827] via-60% to-[#0f172a];
+}
+
+.hero-section {
+  @apply relative overflow-hidden;
+}
+
+/* layer 1 & 2 glowing blobs */
+.hero-section::before,
+.hero-section::after {
+  content: "";
+  @apply absolute w-175 h-175 rounded-full blur-[140px] opacity-45 mix-blend-screen origin-center;
+}
+
+/* Blob 1 - Electric Blue */
+.hero-section::before {
+  @apply bg-radial from-blue-600 to-transparent to-70% -top-50 -left-62.5 animate-blob-1;
+}
+
+/* Blob 2 - Neon Cyan */
+.hero-section::after {
+  @apply bg-radial from-cyan-400 to-transparent to-70% -bottom-50 -right-62.5 animate-blob-2;
+}
+
+.social-icon {
+  @apply transition-all duration-300 ease-in-out text-slate-400;
+}
+
+.social-icon:hover {
+  @apply text-sky-500 -translate-y-[3px];
+}
+
+.skill-badge {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.skill-badge:hover {
+  @apply scale-105 shadow-[0_5px_15px_rgba(0,0,0,0.1)];
+}
+
+/* ── Scroll reveal (iOS-style spring) ── */
+.reveal {
+  @apply opacity-0 translate-y-6 scale-95 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)];
+}
+.reveal.is-visible {
+  @apply opacity-100 translate-y-0 scale-100;
+}
+
+.project-image {
+  @apply h-[250px] object-cover transition-transform duration-500 ease-in-out;
+}
+
+.project-card:hover .project-image {
+  @apply scale-110;
+}
+
+.form-control:focus {
+  @apply border-sky-500 shadow-[0_0_0_0.2rem_rgba(14,165,233,0.25)];
+}
+
+.icon-box {
+  @apply w-15 h-15 flex items-center justify-center rounded-xl text-white;
+}
+
+.bounce-animation {
+  @apply animate-soft-bounce;
+}
+
+/* ── Login Page ── */
+.login-card {
+  @apply rounded-2xl!;
+}
+
+.login-logo {
+  @apply w-15 h-15;
+}
+
+.divider-text {
+  @apply relative;
+}
+.divider-text::before {
+  content: "";
+  @apply absolute top-1/2 left-0 right-0 h-px bg-slate-200;
+}
+.divider-text span {
+  @apply relative bg-white;
+}
+
+/* ── Dashboard Layout ── */
+.dashboard-sidebar {
+  @apply w-60 min-w-60 bg-slate-900 flex flex-col sticky top-0 h-screen overflow-y-auto shrink-0;
+}
+
+.dashboard-main {
+  @apply min-w-0;
+}
+
+.sidebar-nav-item {
+  @apply text-slate-400 bg-transparent border-0 text-[0.9rem] transition-all duration-200 ease-in-out;
+}
+.sidebar-nav-item:hover {
+  @apply text-white bg-white/7;
+}
+.sidebar-nav-item.active {
+  @apply text-white;
+}
+
+.user-avatar {
+  @apply w-9 h-9 min-w-9 text-xs;
+}
+
+.sidebar-overlay {
+  @apply hidden;
+}
+
+@media (max-width: 991px) {
+  .dashboard-sidebar {
+    @apply fixed top-0 -left-65 h-full z-[1050] transition-[left] duration-300 ease-in-out;
+  }
+  .dashboard-sidebar.open {
+    @apply left-0 shadow-[4px_0_20px_rgba(0,0,0,0.4)];
+  }
+  .sidebar-overlay {
+    @apply block fixed inset-0 bg-black/50 z-[1040];
+  }
+}
+
+.bg-success-subtle {
+  @apply bg-green-100!;
+}
+.bg-danger-subtle {
+  @apply bg-red-100!;
+}
+.bg-secondary-subtle {
+  @apply bg-slate-100!;
+}
+
+/* ── Stat card hover ── */
+.stat-card {
+  @apply transition duration-200 ease-in-out;
+}
+.stat-card:hover {
+  @apply -translate-y-1 shadow-[0_8px_24px_rgba(0,0,0,0.1)]!;
+}
+
+/* ── Transaction row ── */
+.transaction-row {
+  @apply transition-colors duration-150 ease-in-out;
+}
+.transaction-row:hover td {
+  @apply bg-slate-50;
+}
+
+/* ── Notification dropdown ── */
+.notif-dropdown {
+  @apply rounded-xl overflow-hidden max-h-[360px] overflow-y-auto;
+}
+.notif-unread {
+  @apply bg-blue-50;
+}
+
+/* ── Modal overlay ── */
+.modal-overlay {
+  @apply fixed inset-0 bg-slate-900/55 z-[2000] flex items-center justify-center p-4 animate-fade-in;
+}
+.modal-box {
+  @apply bg-white rounded-2xl p-7 w-full max-w-[460px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] animate-slide-up;
+}
+
+/* ── User card ── */
+.user-card {
+  @apply rounded-xl! transition duration-200 ease-in-out;
+}
+.user-card:hover {
+  @apply -translate-y-1 shadow-[0_8px_24px_rgba(0,0,0,0.1)]!;
 }

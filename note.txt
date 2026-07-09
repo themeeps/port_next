@@ -1,0 +1,679 @@
+Dokumentasi Project: Part of Me (Portfolio)
+============================================
+Catatan ini melengkapi style_note_tailwind.txt (yang fokus ke detail konversi
+Bootstrap -> Tailwind). Isi di sini lebih ke gambaran besar: tech stack,
+dependencies, dan apa yang dilakukan tiap section/file.
+
+
+1. TECH STACK
+==============
+
+- Next.js 16.2.9 (App Router, Turbopack) — framework utama, routing lewat
+  folder src/app, route handler API lewat app/api/*/route.ts.
+- React 19.2.4 + React DOM 19.2.4
+- TypeScript ^5 — semua komponen pakai .tsx, dicek lewat `npx tsc --noEmit`.
+- Tailwind CSS v4 (^4) + @tailwindcss/postcss — satu-satunya sistem styling
+  di project ini (lihat src/app/globals.css). Tidak ada Bootstrap CSS/JS.
+- ESLint ^9 + eslint-config-next 16.2.9
+- framer-motion ^12.42.2 — dipakai untuk animasi scroll-reveal di Hero
+  (lihat poin Hero di bawah).
+- lucide-react ^1.22.0 — icon set. PENTING: versi ini TIDAK punya icon brand
+  seperti Github/Linkedin (beda dari versi lucide-react yang umum dipakai
+  tutorial). Icon yang tersedia & dipakai di project: Mail, Phone, MapPin,
+  Code2, Rocket, Users, Layout, Server, Database, ShoppingCart,
+  LayoutDashboard, ListChecks, ExternalLink, ArrowDown, Computer.
+  Kalau butuh icon baru, cek dulu apakah namanya benar-benar ada di
+  node_modules/lucide-react/dist/lucide-react.d.ts sebelum dipakai.
+- resend ^6.17.1 — SDK untuk kirim email dari server (dipakai di
+  src/app/api/contact/route.ts untuk form Contact).
+- next-auth ^5.0.0-beta.31 (Auth.js v5) — autentikasi admin. Install pakai
+  `npm install next-auth@beta`, BUKAN tag `latest` — dist-tag `latest` di
+  npm untuk package ini masih v4 (bergaya Pages Router, tidak cocok untuk
+  App Router). Dipakai untuk login /admin.
+- prisma ^7.8.0 + @prisma/client ^7.8.0 — ORM untuk database yang
+  menyimpan konten Projects/Skills/About yang bisa diedit lewat /admin.
+- @prisma/adapter-neon + @neondatabase/serverless — driver adapter untuk
+  Postgres di Neon (WAJIB di Prisma 7, lihat gotcha di bawah). UPDATE:
+  sebelumnya project ini pakai SQLite lokal + @prisma/adapter-better-
+  sqlite3, SEKARANG sudah pindah ke Postgres (hosted di Neon,
+  neon.tech) — package sqlite-nya sudah di-uninstall, tidak dipakai lagi.
+- bcryptjs ^3.0.3 — hash password admin (pure JS, bukan native `bcrypt`,
+  supaya tidak ada masalah kompilasi native module di Turbopack).
+- tsx ^4.23.0 (devDependency) — buat menjalankan prisma/seed.ts (TypeScript
+  langsung, tanpa build step terpisah).
+- dotenv ^17.4.2 (devDependency) — dipakai manual di prisma.config.ts dan
+  prisma/seed.ts untuk load .env / .env.local (lihat poin ENV di bawah).
+
+Gotcha lain yang perlu diingat:
+- Tailwind v4 di versi ini TIDAK otomatis membuatkan utility class dari
+  custom theme token `--ease-*` (mis. `--ease-ios` tidak menghasilkan class
+  `ease-ios`). Kalau pakai easing custom di `@apply`, harus pakai arbitrary
+  value langsung: `ease-[cubic-bezier(...)]`.
+- Gradient utility di Tailwind v4 namanya `bg-linear-to-*` / `bg-radial`
+  (BUKAN `bg-gradient-to-*` seperti Tailwind v3).
+- Kalau menggabungkan utility `animate-*` dengan arbitrary property
+  `[animation-delay:...]` dalam satu `@apply`, Tailwind bisa salah compile
+  jadi animation-name kosong. Solusinya: masukkan delay langsung ke dalam
+  shorthand `--animate-*` (mis. `nama-animasi 18s ease-in-out 5s infinite`).
+- `FormEvent`/`FormEventHandler` dari @types/react versi ini sudah
+  @deprecated ("doesn't actually exist"). Untuk form submit pakai
+  `SubmitEvent<HTMLFormElement>` sebagai gantinya.
+- Next.js 16 mengganti nama "Middleware" jadi "Proxy": file konvensinya
+  sekarang `proxy.ts` (bukan `middleware.ts`) di root project, dengan
+  fungsi bernama `proxy` (bukan `middleware`). `middleware.ts` lama masih
+  jalan tapi deprecated. Proxy di versi ini SELALU jalan di Node.js runtime
+  (bukan Edge) — opsi `runtime` tidak bisa di-set di proxy.ts.
+- Prisma 7 WAJIB pakai driver adapter untuk semua datasource (SQLite
+  MAUPUN Postgres) — `new PrismaClient()` polos yang cuma mengandalkan
+  `datasource url` di schema.prisma sudah TIDAK JALAN lagi (akan error
+  runtime). Untuk Postgres/Neon: `new PrismaClient({ adapter: new
+  PrismaNeon({ connectionString }) })` dari package `@prisma/adapter-neon`
+  (butuh `@neondatabase/serverless` juga sebagai peer dependency-nya).
+- Prisma 7 juga ganti default generator jadi `prisma-client` (bukan
+  `prisma-client-js`), output-nya ke folder sendiri (di project ini:
+  src/generated/prisma, sudah di-gitignore otomatis oleh `prisma init`),
+  BUKAN ke node_modules/@prisma/client seperti versi lama. Import client-nya
+  dari path itu langsung (lihat src/lib/prisma.ts), bukan dari
+  `@prisma/client`.
+- Prisma 7 juga pindah config (schema path, migrations path, seed command,
+  datasource url) ke file `prisma.config.ts` di root, BUKAN lagi lewat key
+  `"prisma"` di package.json. Command seed dikonfigurasi lewat
+  `migrations.seed` di prisma.config.ts.
+- PENTING (baru ketahuan pas migrasi ke Neon): di Prisma 7, field `url`
+  dan `directUrl` di blok `datasource db { ... }` pada schema.prisma
+  SUDAH TIDAK BOLEH DITULIS SAMA SEKALI — kalau ditulis, `prisma migrate`
+  akan error validation ("no longer supported in schema files"). Connection
+  string SEKARANG WAJIB ditaruh di `prisma.config.ts` lewat key
+  `datasource.url`, bukan di schema.prisma. schema.prisma sekarang cuma
+  berisi `provider = "postgresql"` saja untuk blok datasource-nya.
+- `prisma.config.ts` TIDAK otomatis baca `.env.local` — dia cuma baca
+  `.env` lewat `import "dotenv/config"`. Karena project ini sudah biasa
+  pakai `.env.local` (konvensi Next.js) untuk secret, DATABASE_URL &
+  DIRECT_URL taruh di `.env` biasa (dibaca Prisma CLI & tetap kebaca
+  Next.js juga), sedangkan AUTH_SECRET/ADMIN_EMAIL/ADMIN_PASSWORD tetap di
+  `.env.local`. Supaya prisma/seed.ts bisa baca ADMIN_EMAIL/ADMIN_PASSWORD
+  dari `.env.local`, di dalam seed.ts manual dipanggil `config()` lalu
+  `config({ path: '.env.local', override: true })` dari package `dotenv`.
+- Neon (dan kebanyakan Postgres serverless) kasih DUA connection string:
+  **pooled** (hostname ada akhiran `-pooler`, lewat PgBouncer, dipakai buat
+  query aplikasi sehari-hari karena cocok untuk banyak koneksi pendek ala
+  serverless) dan **direct/unpooled** (hostname tanpa `-pooler`, dipakai
+  KHUSUS untuk `prisma migrate` karena operasi DDL/locking migration bisa
+  bermasalah lewat connection pooler). Pembagiannya di project ini:
+  `prisma.config.ts` (dipakai CLI/migrate) → `DIRECT_URL`. `src/lib/
+  prisma.ts` & `prisma/seed.ts` (dipakai aplikasi jalan/seed data) →
+  `DATABASE_URL` (pooled).
+- BUG PENTING yang ditemukan & diperbaiki: kalau `proxy.ts` (dulu
+  middleware) di-set untuk melindungi path `/admin/:path*`, dan ada Server
+  Action di halaman itu yang memanggil `redirect(...)` setelah mutasi
+  (mis. createProject), maka SESSION COOKIE bisa hilang dan user ke-logout
+  paksa! Ini karena Server Action nge-POST balik ke URL halaman itu sendiri
+  (mis. POST /admin/projects/new), yang otomatis ke-match juga oleh proxy
+  matcher yang sama, dan interaksi keduanya menghapus cookie. Next.js
+  sendiri memperingatkan hal ini di dokumentasinya ("a Proxy matcher that
+  excludes a path will also skip Server Function calls on that path...
+  always verify authentication inside each Server Function"). Perbaikan:
+  di proxy.ts, exclude request yang punya header `next-action`:
+  `matcher: [{ source: '/admin/:path*', missing: [{ type: 'header', key:
+  'next-action' }] }]`. DAN sebagai lapis kedua, setiap Server Action di
+  src/app/admin/**/actions.ts sekarang manggil `await requireAdmin()`
+  (dari src/lib/require-admin.ts) di baris pertama, tidak cuma
+  mengandalkan proxy.
+- BUG lain (production only, `next start`): Auth.js menolak request dengan
+  error "UntrustedHost" kalau host (mis. localhost) tidak ditandai
+  trusted. Perbaikan: `trustHost: true` di auth.config.ts.
+
+
+2. DEPENDENCIES / NPM INSTALL YANG DIJALANKAN
+================================================
+
+Sudah terpasang duluan sebelum sesi ini (ada di package.json awal):
+- next, react, react-dom, typescript, tailwindcss, @tailwindcss/postcss,
+  eslint, eslint-config-next, @types/node, @types/react, @types/react-dom
+- framer-motion (sudah ada di package.json, tinggal dipakai untuk animasi
+  Hero — tidak perlu install ulang)
+- lucide-react (sudah ada, dipakai untuk semua icon di project)
+
+Yang di-install baru selama sesi Contact form:
+- `npm install resend` — untuk fitur "Contact form kirim email otomatis"
+  (sebelumnya cuma pakai mailto: link).
+
+Yang di-install baru selama sesi Admin CMS (login + /admin):
+- `npm install next-auth@beta bcryptjs prisma @prisma/client
+  @prisma/adapter-better-sqlite3 better-sqlite3` — auth + database layer
+  (database-nya waktu itu masih SQLite lokal).
+- `npm install -D tsx dotenv` — buat menjalankan prisma/seed.ts dan load
+  env var manual di situ.
+
+Yang berubah selama sesi migrasi ke Neon (Postgres):
+- `npm install @prisma/adapter-neon @neondatabase/serverless` — driver
+  adapter Postgres untuk Neon, menggantikan driver SQLite.
+- `npm uninstall @prisma/adapter-better-sqlite3 better-sqlite3` — sudah
+  tidak dipakai sama sekali, dihapus supaya tidak jadi dependency mubazir.
+
+Kalau clone fresh, urutan setup-nya:
+1. `npm install` (baca semua dependency di package.json).
+2. Isi `.env` dan `.env.local` (lihat poin 4) — perlu bikin/punya akses ke
+   database Postgres (di project ini pakai Neon, neon.tech) dan ambil
+   connection string pooled + direct-nya.
+3. `npx prisma migrate dev` (bikin tabel-tabel di database Postgres itu).
+4. `npx prisma db seed` (isi database dengan admin user + konten awal).
+5. `npm run dev`.
+
+
+3. STRUKTUR & FUNGSI TIAP SECTION/FILE
+=========================================
+
+src/app/layout.tsx
+  - Root layout. Import font Geist (Sans & Mono) dan src/app/globals.css.
+  - Tidak perlu diubah untuk section baru; page.tsx yang mengatur urutan
+    section-section di homepage.
+
+src/app/page.tsx
+  - Merender semua section homepage secara berurutan:
+    Navbar -> HeroSection -> AboutSection -> SkillsSection ->
+    ProjectsSection -> ContactSection -> Footer.
+
+src/app/globals.css
+  - Satu-satunya file CSS di project. Berisi:
+    * `@import "tailwindcss";` (wajib, tanpa ini semua utility Tailwind
+      tidak akan ter-generate).
+    * `@theme` — custom font (--font-sans), semua custom animasi
+      (--animate-blob-1/2, --animate-soft-bounce, --animate-fade-in,
+      --animate-slide-up, --animate-slide-in-right) beserta @keyframes-nya.
+    * Semua class custom project (text-gradient, btn-gradient, hero-section,
+      icon-box, card-hover, skill-badge, project-image, form-control,
+      social-icon, reveal/is-visible, dashboard-*, sidebar-*, login-*, dll)
+      ditulis pakai `@apply` + utility Tailwind, bukan CSS manual.
+  - UPDATE: class `dashboard-*`, `sidebar-*`, `login-*`, `stat-card`,
+    `user-card` yang tadinya disiapkan tapi belum dipakai, SEKARANG sudah
+    dipakai oleh fitur Admin CMS (lihat bagian 6 di bawah) — /login dan
+    /admin/*. Class `transaction-row`, `notif-*` masih belum dipakai.
+    `modal-*` sekarang SUDAH dipakai juga (oleh AlertModal, lihat poin 8).
+  - UPDATE: ditambah rule global `button:not(:disabled) { @apply
+    cursor-pointer; }` tepat setelah rule `body`. Alasannya: browser
+    modern TIDAK otomatis kasih `cursor: pointer` ke elemen `<button>`
+    (beda dengan `<a>` yang otomatis dapat), dan Tailwind v4 preflight
+    juga tidak nambahin itu — jadi semua tombol di project ini kelihatan
+    seperti tidak bisa diklik pas di-hover kalau tidak ditambah manual.
+    Satu rule global ini otomatis berlaku ke semua tombol di seluruh
+    project (Navbar, admin, Contact, dll) tanpa perlu edit tiap komponen.
+    Tombol yang `disabled` (loading state) sengaja dikecualikan.
+
+src/app/hooks/useReveal.ts
+  - Hook reusable: bikin ref + IntersectionObserver, return { ref,
+    isVisible }. isVisible jadi true sekali (unobserve setelahnya) saat
+    elemen masuk viewport. Dipakai bareng class `.reveal`/`.is-visible`
+    dari globals.css untuk animasi fade+slide+scale saat scroll.
+  - Dipakai oleh: SkillsSection, ProjectsSection, ContactSection.
+
+src/app/components/Navbar.tsx
+  - Nav bar fixed di atas. Background berubah (navbar-scrolled) saat
+    window.scrollY > 50 (dicek lewat useState + event listener scroll).
+  - Menu mobile (hamburger) pakai React state `isOpen`, bukan Bootstrap JS.
+  - Tidak butuh dependency tambahan (cuma next/link).
+
+src/app/components/HeroSection.tsx
+  - PALING kompleks. Section pertama yang muncul cuma teks "Hello, welcome
+    to my portfolio". Scroll wheel/touch di-intercept (preventDefault) dan
+    dipakai untuk memajukan `step` (0-6) yang mengontrol animasi
+    framer-motion (`motion`, `AnimatePresence`, `Variants`) untuk
+    memunculkan tiap elemen (foto, judul, tagline, deskripsi, tombol,
+    social icons) satu per satu. Baru setelah step=6 (semua elemen
+    muncul), scroll halaman dilepas ke perilaku normal.
+  - Butuh: framer-motion, lucide-react (Computer, ExternalLink, Mail,
+    ArrowDown, LayoutDashboard), next/link.
+  - Foto profil ambil dari /public/images/formal_photo.jpeg.
+
+src/app/components/AboutSection.tsx
+  - UPDATE (setelah fitur Admin CMS): sekarang `async function` server
+    component yang fetch `prisma.aboutContent` + `prisma.aboutHighlight`
+    langsung dari database (bukan hardcoded array lagi). Icon disimpan di
+    DB sebagai string nama (mis. "Code2"), di-resolve ke komponen React
+    lewat `resolveIcon()` dari src/lib/icons.ts. Foto profil masih statis
+    dari /public/images/profile_ali.png (bukan dari DB, sengaja — lihat
+    poin 7 "belum dikerjakan").
+
+src/app/components/SkillsSection.tsx + SkillsGrid.tsx (baru, split)
+  - UPDATE: SkillsSection.tsx sekarang jadi SERVER component (bukan
+    'use client' lagi) yang fetch `prisma.skillGroup` (include subgroups)
+    lalu render <SkillsGrid groups={...} />. SkillsGrid.tsx (file baru)
+    adalah CLIENT component yang isinya JSX + hook useReveal yang dulu ada
+    di SkillsSection.tsx (dipecah karena Prisma cuma bisa jalan di server
+    component, sedangkan useReveal/IntersectionObserver butuh client
+    component — makanya harus dipecah jadi 2 file).
+  - Data icon dikirim sebagai STRING dari server ke client (bukan
+    komponen React-nya langsung, karena React Server Component tidak bisa
+    mengirim function/component sebagai props ke Client Component) —
+    resolveIcon(icon) dipanggil di dalam SkillsGrid.tsx.
+
+src/app/components/ProjectsSection.tsx + ProjectsGrid.tsx (baru, split)
+  - Sama persis polanya dengan SkillsSection/SkillsGrid di atas:
+    ProjectsSection.tsx (server) fetch `prisma.project`, ProjectsGrid.tsx
+    (client, baru) pegang useReveal + JSX. Isinya 3 project card
+    (E-Commerce Platform, Finance Dashboard, Task Management App) dengan
+    thumbnail placeholder gradient (karena belum ada screenshot project
+    asli), badge tech stack, link "Code" & "Live Demo".
+  - `tech` (array string) disimpan di DB sebagai JSON string (peninggalan
+    dari skema jaman SQLite, lihat poin 5 "belum dikerjakan"), di-parse
+    balik jadi array pas dibaca.
+
+src/app/components/ContactSection.tsx
+  - Client component. Kiri: info kontak (Email/Phone/Location) pakai
+    icon-box. Kanan: form (Name/Email/Message) yang submit ke
+    /api/contact lewat fetch (BUKAN mailto: lagi). Ada status
+    idle/sending/success/error yang ditampilkan ke user.
+  - Butuh: lucide-react (Mail, Phone, MapPin), hooks/useReveal, DAN
+    endpoint src/app/api/contact/route.ts (lihat bawah) supaya form
+    benar-benar bisa kirim email.
+
+src/app/api/contact/route.ts
+  - Route handler Next.js (POST). Terima { name, email, message }, kirim
+    email lewat Resend ke sayyidali195@gmail.com dengan replyTo = email
+    pengirim (supaya bisa langsung "Reply" dari inbox).
+  - Butuh: package `resend` + env var RESEND_API_KEY (lihat poin 4).
+  - Kalau RESEND_API_KEY belum diisi/masih placeholder, endpoint ini akan
+    balas error 502 dan form akan menampilkan pesan error ke user (sudah
+    dites, behavior-nya sesuai ekspektasi).
+
+src/app/components/Footer.tsx
+  - Server component statis. Brand + tagline, Quick Links (anchor ke tiap
+    section), social icons (sama seperti Hero: Computer/ExternalLink/Mail),
+    dan copyright dengan tahun otomatis (`new Date().getFullYear()`).
+
+--- File-file baru untuk fitur Admin CMS (login + /admin) ---
+
+prisma/schema.prisma
+  - Definisi semua tabel: AdminUser (email + password hash), Project,
+    SkillGroup + SkillSubgroup (relasi 1-ke-banyak, `onDelete: Cascade`),
+    AboutContent (1 baris singleton, id="about"), AboutHighlight.
+  - Field array (tech, skills) disimpan sebagai `String` berisi JSON,
+    bukan tipe array asli — awalnya begini karena SQLite tidak dukung
+    kolom array, TETAP dipertahankan begini setelah pindah ke Postgres
+    (padahal Postgres sebenarnya dukung `String[]` asli) supaya tidak
+    perlu ubah semua kode JSON.parse/stringify yang sudah ada. Bisa
+    disederhanakan nanti kalau mau (lihat poin 5 "belum dikerjakan").
+  - Blok `datasource db` CUMA berisi `provider = "postgresql"` — TIDAK
+    ada `url`/`directUrl` di sini (lihat gotcha Prisma 7 di poin 1,
+    connection string-nya ada di prisma.config.ts, bukan di sini).
+
+prisma.config.ts
+  - Config Prisma 7 (menggantikan key "prisma" di package.json versi
+    lama): lokasi schema, lokasi migrations, command seed
+    (`tsx prisma/seed.ts`), dan `datasource.url` dari
+    `process.env.DIRECT_URL` (di-load lewat `import "dotenv/config"` di
+    baris atas file ini) — SENGAJA pakai DIRECT_URL (bukan DATABASE_URL)
+    karena file ini yang dipakai `prisma migrate`, dan migration butuh
+    direct connection, bukan yang lewat pooler (lihat gotcha pooled vs
+    direct di poin 1).
+
+prisma/seed.ts
+  - Script sekali-jalan (`npx prisma db seed`) yang mengisi database:
+    1 AdminUser (password di-hash bcryptjs dari ADMIN_EMAIL/ADMIN_PASSWORD
+    di .env.local), 3 Project, 3 SkillGroup + 4 SkillSubgroup,
+    1 AboutContent, 3 AboutHighlight — semua datanya adalah COPY PERSIS
+    dari isi hardcoded yang tadinya ada di AboutSection/SkillsSection/
+    ProjectsSection, supaya migrasi ke database tidak mengubah tampilan.
+  - Pakai `prisma.<model>.upsert()` untuk AdminUser & AboutContent supaya
+    aman dijalankan berkali-kali (tidak duplikat), tapi `createMany()`
+    untuk Project/SkillGroup/dll (kalau dijalankan ulang akan duplikat —
+    ini script seed sekali pakai, bukan migration yang idempotent penuh).
+  - Adapter-nya pakai `PrismaNeon` + `DATABASE_URL` (pooled) — beda
+    dengan prisma.config.ts yang pakai DIRECT_URL, karena ini query data
+    biasa (insert/upsert), bukan operasi migration.
+
+src/lib/prisma.ts
+  - Singleton PrismaClient pakai driver adapter `PrismaNeon` dari
+    `@prisma/adapter-neon`, connection string dari `DATABASE_URL`
+    (pooled — cocok untuk banyak query pendek ala serverless/Next.js).
+    Import PrismaClient dari `@/generated/prisma/client` (bukan dari
+    `@prisma/client`). Ada guard `globalThis` standar supaya di dev mode
+    (hot reload) tidak bikin banyak instance PrismaClient.
+  - UPDATE: sebelumnya pakai `PrismaBetterSqlite3` (SQLite lokal), sudah
+    diganti total ke `PrismaNeon` (Postgres di Neon) — lihat poin 1
+    gotcha migrasi.
+
+src/lib/icons.ts
+  - `ICON_MAP`: daftar allow-list nama icon lucide-react yang boleh
+    dipakai (dicek satu-satu memang ada di versi lucide-react yang
+    terpasang). `resolveIcon(name)` — ubah string nama icon (dari DB) jadi
+    komponen React icon-nya. `ICON_NAMES` — dipakai buat isi `<select>`
+    di form admin (jadi admin milih dari dropdown, bukan ketik manual).
+
+src/lib/require-admin.ts
+  - Helper kecil `requireAdmin()`: cek `await auth()`, throw error kalau
+    belum login. Dipanggil di baris pertama tiap Server Action mutasi
+    (create/update/delete) di src/app/admin/**/actions.ts sebagai lapis
+    keamanan kedua selain proxy.ts (lihat gotcha soal bug proxy+redirect
+    di poin 1).
+
+auth.config.ts (di root project, BUKAN di src/)
+  - Config Auth.js yang "ringan": `pages.signIn: '/login'`,
+    `trustHost: true`, callback `authorized()` yang menentukan apakah user
+    boleh akses `/admin/*` (return true/false berdasarkan `auth?.user`).
+    SENGAJA tidak import Prisma/bcrypt di sini (dipakai bareng oleh
+    proxy.ts yang seharusnya tetap ringan, walau di Next 16 proxy sudah
+    jalan di Node.js runtime jadi ini lebih soal konvensi/kebersihan
+    daripada keharusan teknis Edge runtime).
+
+auth.ts (di root project)
+  - Config Auth.js LENGKAP: `NextAuth({ ...authConfig, session: {strategy:
+    'jwt'}, providers: [Credentials({...})] })`. Provider Credentials
+    cek email ke tabel AdminUser lewat Prisma, lalu `bcrypt.compare()`
+    password. Export `{ handlers, auth, signIn, signOut }` dipakai di
+    tempat lain (route handler, Server Action login/logout, layout admin).
+
+proxy.ts (di root project — INI BUKAN middleware.ts, lihat gotcha di
+poin 1 soal penamaan baru Next.js 16)
+  - Proteksi route `/admin/:path*`: kalau belum login, redirect ke
+    /login (lewat callback `authorized` di auth.config.ts).
+  - Matcher sengaja exclude request yang punya header `next-action`
+    (skip Server Action POST) — lihat gotcha BUG PENTING di poin 1.
+
+src/app/api/auth/[...nextauth]/route.ts
+  - Route handler wajib buat Auth.js: cuma re-export `{ GET, POST }` dari
+    `handlers` di auth.ts. Menangani endpoint seperti
+    /api/auth/callback/credentials, /api/auth/session, dll secara
+    otomatis (tidak perlu disentuh manual).
+
+src/app/login/page.tsx + LoginForm.tsx + actions.ts
+  - page.tsx: server component, styling `.login-page`/`.login-card`/
+    `.login-logo` (class lama yang tadinya belum dipakai). Ada link
+    "← Back to Home" (pakai `next/link` + icon `ArrowLeft`) di atas card,
+    balik ke `/` (homepage).
+  - LoginForm.tsx: client component, pakai `useActionState` (React 19)
+    supaya bisa nampilin pesan error di form tanpa reload halaman.
+  - actions.ts: Server Action `authenticate()` yang manggil
+    `signIn('credentials', {..., redirectTo: '/admin'})`. Pola penting:
+    di-try/catch, kalau errornya `AuthError` tampilkan pesan generik
+    "Invalid email or password", tapi kalau BUKAN AuthError (termasuk
+    sinyal redirect internal Next.js) di-`throw` ulang supaya redirect
+    tetap jalan — ini pola resmi dari Next.js/Auth.js, bukan buatan
+    sendiri.
+
+src/app/admin/layout.tsx
+  - Server component: `await auth()`, kalau belum login `redirect('/login')`
+    (lapis kedua selain proxy.ts). Render <AdminSidebar /> + <main>,
+    semuanya dibungkus `<AlertProvider>` (lihat poin 8) supaya popup
+    success/failed bisa dipakai di semua halaman /admin/*.
+
+src/app/admin/AdminSidebar.tsx
+  - Client component (butuh `usePathname()` buat highlight menu aktif +
+    state buka/tutup sidebar mobile). Styling pakai class
+    `.dashboard-sidebar`/`.sidebar-nav-item`/`.sidebar-overlay` yang lama.
+  - Tombol "Log out" di sini adalah <form action={logoutAction}> — SATU
+    HAL PENTING: karena ini ADA DI SETIAP HALAMAN /admin/* (lewat layout),
+    hati-hati kalau nulis test/otomasi yang nge-klik
+    `button[type="submit"]` tanpa di-scope — bisa ke-klik tombol Log out
+    ini alih-alih tombol Save di form halaman (pernah kejadian pas testing
+    sesi ini, bukan bug aplikasi, tapi bug script testing-nya).
+
+src/app/admin/logout-action.ts
+  - Server Action kecil `logoutAction()` yang manggil `signOut()`.
+
+src/app/admin/DeleteButton.tsx
+  - Client component reusable: tombol delete dengan `window.confirm()`
+    dulu sebelum manggil Server Action-nya. Dipakai di semua list
+    (projects/skills/about highlights).
+  - UPDATE: sekarang bungkus pemanggilan action-nya dengan try/catch, lalu
+    panggil `showAlert()` dari `useAlert()` (context, BUKAN state lokal —
+    lihat kenapa di poin 8) — sukses (props `successMessage`) atau gagal
+    ("Failed to delete.").
+
+src/app/admin/AlertModal.tsx (baru)
+  - Komponen popup ala SweetAlert (presentational doang, tidak nyimpan
+    state sendiri), reuse class `.modal-overlay`/`.modal-box` yang dari
+    awal sudah disiapkan di globals.css tapi belum pernah dipakai. Icon
+    `CheckCircle2` (hijau, pakai `.bg-success-subtle`) untuk sukses,
+    `XCircle` (merah, `.bg-danger-subtle`) untuk gagal. Klik tombol "OK"
+    atau klik backdrop buat nutup. Cuma DI-RENDER SEKALI oleh
+    AlertProvider (lihat di bawah), bukan per-form. Lihat poin 8.
+
+src/app/admin/AlertProvider.tsx (baru)
+  - React Context yang nyimpen state popup (`alert`) + fungsi
+    `showAlert(alert, onClose?)`, dipasang SEKALI di src/app/admin/
+    layout.tsx membungkus `{children}`, dan me-render SATU `<AlertModal>`
+    di situ (bukan satu per form/tombol). Lihat poin 8 — ini FIX buat bug
+    yang sempat ketemu waktu testing (popup delete tidak muncul).
+
+src/app/admin/actionResult.ts (baru)
+  - Cuma 1 baris: `export type ActionResult = { success: boolean; message:
+    string }`. Dipakai bareng oleh semua actions.ts (Projects/Skills/
+    About) supaya return type-nya konsisten. Lihat poin 8.
+
+src/app/admin/useAdminForm.ts (baru)
+  - Hook reusable buat semua form admin (Project/SkillGroup/Highlight/Bio):
+    bungkus `useActionState`, dan tiap kali ada `state` baru dari action
+    (`useEffect`), panggil `showAlert()` dari `useAlert()` (context) —
+    kalau sukses, dikasih callback `onClose` yang isinya `router.push
+    (redirectTo)`, jadi pindah halaman baru terjadi SETELAH user tutup
+    popup, bukan langsung. Lihat poin 8.
+
+src/app/admin/page.tsx
+  - Overview dashboard: 3 `.stat-card` (jumlah Projects, Skill Groups,
+    About Highlights) dari `prisma.<model>.count()`.
+
+src/app/admin/projects/{page.tsx, new/page.tsx, [id]/page.tsx,
+ProjectForm.tsx, actions.ts}
+  - CRUD lengkap. `ProjectForm.tsx` dipakai bareng oleh new & edit (props
+    `action` beda: createProject vs updateProject.bind(null, id)).
+  - Field `tech` di form cuma satu `<input>` teks "comma-separated"
+    (bukan UI dinamis tambah/hapus tag) — sengaja disederhanakan, sama
+    kayak pola ProjectForm.
+  - UPDATE (fitur popup, lihat poin 8): `ProjectForm.tsx` sekarang
+    `'use client'`, pakai hook `useAdminForm` bukan langsung
+    `<form action={action}>`. `createProject`/`updateProject` di
+    actions.ts sekarang RETURN `ActionResult` (bukan langsung
+    `redirect()`) supaya ada hasil yang bisa ditampilkan di popup.
+
+src/app/admin/skills/{page.tsx, new/page.tsx, [id]/page.tsx,
+SkillGroupForm.tsx, actions.ts}
+  - Mirip Projects, tapi lebih rumit karena SkillGroup bisa punya 0 ATAU
+    2 subgroup (Language/Framework). Form-nya punya field "Flat skills"
+    (dipakai kalau TIDAK ada subgroup, mis. Database) + 2 blok
+    "Subgroup 1"/"Subgroup 2" opsional (kosongkan label = tidak dipakai).
+  - Strategi update subgroup: HAPUS SEMUA subgroup lama lalu buat ulang
+    dari form (bukan update in-place per-id) — lebih simpel karena
+    jumlah subgroup dibatasi maks 2, tidak perlu UI dinamis nomor ID.
+  - UPDATE (fitur popup): sama seperti Projects, `SkillGroupForm.tsx`
+    pakai `useAdminForm`, `createSkillGroup`/`updateSkillGroup` return
+    `ActionResult`.
+
+src/app/admin/about/{page.tsx, actions.ts, HighlightForm.tsx, BioForm.tsx,
+highlights/new/page.tsx, highlights/[id]/page.tsx}
+  - page.tsx gabung 2 hal: form edit bio (lewat `<BioForm>`) DAN daftar
+    highlight cards dengan CRUD terpisah (pola sama seperti Projects).
+  - UPDATE (fitur popup): `updateBio` dulu langsung inline di page.tsx
+    sebagai server action polos, SEKARANG dipindah ke `BioForm.tsx`
+    (client component baru) supaya bisa pakai `useAdminForm` juga dan
+    nampilin popup "Bio updated successfully." — redirect target-nya ke
+    halaman yang sama (`/admin/about`), jadi setelah popup ditutup ya
+    cuma tetap di halaman itu (bukan pindah halaman). `HighlightForm.tsx`
+    diupdate sama seperti ProjectForm/SkillGroupForm.
+
+
+4. ENVIRONMENT VARIABLES
+===========================
+
+Ada DUA file env sekarang (keduanya sudah otomatis ke-gitignore lewat pola
+`.env*` di .gitignore — jangan pernah commit salah satunya):
+
+.env (dibaca Prisma CLI via prisma.config.ts, JUGA kebaca Next.js sebagai
+fallback paling rendah prioritasnya):
+
+  DATABASE_URL="postgresql://<user>:<password>@<host>-pooler.<region>.aws.neon.tech/<db>?sslmode=require&channel_binding=require"
+  DIRECT_URL="postgresql://<user>:<password>@<host>.<region>.aws.neon.tech/<db>?sslmode=require&channel_binding=require"
+
+  (UPDATE: sebelumnya cuma ada DATABASE_URL="file:./dev.db" waktu masih
+  SQLite lokal. Sekarang dua-duanya string Postgres dari Neon — bedanya
+  cuma hostname DATABASE_URL ada akhiran "-pooler", DIRECT_URL tidak.
+  Lihat gotcha "pooled vs direct" di poin 1 kenapa harus dua-duanya.)
+
+.env.local (dibaca Next.js runtime seperti biasa; TIDAK dibaca Prisma CLI
+secara langsung, tapi prisma/seed.ts sengaja load ini juga secara manual):
+
+  RESEND_API_KEY=<api key dari resend.com>
+  AUTH_SECRET=<random string, generate pakai `openssl rand -base64 32`>
+  ADMIN_EMAIL=admin@partofme.dev
+  ADMIN_PASSWORD=ChangeMe123!
+
+Catatan tiap key:
+- DATABASE_URL / DIRECT_URL — connection string ke database Postgres di
+  Neon (neon.tech). Ambil dari dashboard project Neon → widget
+  "Connection Details". Tanpa ini, seluruh aplikasi tidak bisa jalan sama
+  sekali (bukan cuma satu fitur) karena semua Server Component homepage
+  (About/Skills/Projects) dan seluruh /admin fetch dari sini.
+- RESEND_API_KEY — tanpa ini (atau masih placeholder), form Contact tetap
+  bisa diklik tapi gagal kirim (endpoint balas 502, UI nunjukin pesan
+  error). Akun gratis Resend tanpa verifikasi domain cuma bisa kirim dari
+  `onboarding@resend.dev` dan cuma bisa kirim KE alamat email yang dipakai
+  daftar akun Resend itu sendiri.
+- AUTH_SECRET — wajib ada untuk Auth.js (dipakai buat sign/encrypt JWT
+  session). Kalau kosong, Auth.js akan error saat production build/run.
+- ADMIN_EMAIL / ADMIN_PASSWORD — HANYA dipakai sekali saat
+  `npx prisma db seed` untuk membuat baris AdminUser (password di-hash
+  bcryptjs sebelum disimpan). Setelah di-seed, ganti env var ini TIDAK
+  otomatis mengubah password admin yang sudah ada di database — kalau mau
+  ganti password admin, harus lewat query database langsung atau hapus &
+  seed ulang baris AdminUser-nya.
+  PENTING: ganti ADMIN_PASSWORD dari default "ChangeMe123!" sebelum project
+  ini dipakai serius / di-deploy.
+
+
+5. HAL YANG BELUM DIKERJAKAN (kalau mau lanjut nanti)
+========================================================
+- Thumbnail project di ProjectsSection masih placeholder gradient, belum
+  screenshot asli.
+- Section Hero, Contact, Footer, Navbar BELUM bisa diedit lewat /admin
+  (cuma Projects, Skills, About yang sudah). Kalau mau nambah, ikuti pola
+  yang sama seperti Projects: bikin model Prisma baru, halaman
+  admin/<nama>/{page,new,[id],actions.ts}, lalu ubah komponen publiknya
+  jadi fetch dari Prisma (contoh paling mirip: AboutSection.tsx untuk
+  konten simpel, ProjectsSection.tsx untuk yang butuh split
+  server/client kalau ada animasi).
+- Belum ada upload gambar — foto profil About & avatar Hero masih path
+  statis ke /public/images, bukan field yang bisa diganti dari /admin.
+- Cuma ada 1 admin user (hardcoded lewat seed), tidak ada registrasi user
+  baru, role, atau lupa-password flow.
+- prisma/seed.ts pakai `createMany()` untuk Project/SkillGroup/dll —
+  kalau dijalankan LEBIH DARI SEKALI di database yang sama, akan
+  menghasilkan data duplikat (bukan idempotent). Aman dijalankan sekali
+  di awal (`npx prisma db seed` pas setup awal), tapi jangan dijalankan
+  ulang di database yang sudah terisi tanpa menghapus datanya dulu.
+- Field `tech`/`skills` masih disimpan sebagai JSON string (peninggalan
+  dari waktu masih SQLite). Sekarang sudah di Postgres yang punya tipe
+  kolom `String[]` asli — bisa disederhanakan (ganti tipe kolom + hapus
+  semua JSON.parse/stringify di kode) kalau mau, tapi tidak wajib, cuma
+  soal kerapian.
+
+
+6. STATUS SIAP-DEPLOY KE VERCEL
+==================================
+Database sudah pindah ke Neon (Postgres serverless) supaya cocok jalan di
+Vercel — SQLite lokal yang dipakai sebelumnya TIDAK akan jalan di Vercel
+karena filesystem-nya read-only/sementara di serverless function.
+
+Kalau mau deploy ke Vercel, env variable yang perlu diisi di project
+Vercel-nya (Settings → Environment Variables), sama persis kayak isi
+.env + .env.local di lokal:
+  DATABASE_URL, DIRECT_URL, RESEND_API_KEY, AUTH_SECRET, ADMIN_EMAIL,
+  ADMIN_PASSWORD (ADMIN_EMAIL/ADMIN_PASSWORD sebenarnya cuma perlu ada
+  saat seed, tapi tidak masalah kalau ikut diisi juga).
+
+Belum dicoba/diverifikasi di sesi ini: deploy beneran ke Vercel (baru
+dites `npm run build` + `npm run start` lokal, hasilnya sukses). Kalau
+mau deploy, tinggal push ke git + connect repo-nya di Vercel dashboard,
+lalu isi env var di atas sebelum build pertama jalan.
+
+
+7. LOGIN ADMIN & CARA JALANIN
+================================
+1. Pastikan sudah `npx prisma migrate dev` + `npx prisma db seed` (lihat
+   poin 2).
+2. `npm run dev`, buka http://localhost:3000/login (atau klik tombol
+   "Admin Dashboard" di Navbar/Hero).
+3. Login pakai ADMIN_EMAIL/ADMIN_PASSWORD dari .env.local.
+4. Setelah login masuk ke /admin — sidebar kiri ada menu Overview,
+   Projects, Skills, About. Semua perubahan lewat form di sini langsung
+   ke-refleksi di homepage publik (berkat `revalidatePath('/')` di setiap
+   Server Action mutasi) — bahkan di production build (`npm run build`
+   lalu `npm run start`) di mana halaman `/` di-prerender statis saat
+   build; tanpa revalidatePath, perubahan admin TIDAK akan pernah muncul
+   di halaman publik sampai rebuild ulang.
+5. Logout lewat tombol "Log out" di bagian bawah sidebar.
+
+
+8. POPUP SUCCESS/FAILED ALA SWEETALERT DI /admin
+===================================================
+Semua tombol Save (Project/SkillGroup/Highlight/Bio) dan Delete
+(Project/SkillGroup/Highlight) sekarang nampilin popup modal — bukan
+langsung pindah halaman diam-diam kayak sebelumnya. Popup-nya reuse
+class `.modal-overlay`/`.modal-box` yang dari awal project sudah
+disiapkan di globals.css tapi belum pernah kepakai (dipakai buat
+`AlertModal.tsx`, komponen baru di src/app/admin/AlertModal.tsx).
+
+Kenapa TIDAK pakai library `sweetalert2`: styling default SweetAlert2
+tidak nyambung sama desain Tailwind project ini, dan project sudah punya
+class modal siap pakai sendiri — jadi bikin komponen sendiri lebih
+ringkas (tidak nambah dependency) dan otomatis konsisten sama tema warna
+di globals.css (pakai `.bg-success-subtle`/`.bg-danger-subtle` yang juga
+sudah ada dari awal).
+
+Perubahan arsitektur penting (KENAPA formnya jadi 'use client'):
+- SEBELUMNYA: `createProject`/`updateProject`/dst langsung manggil
+  `redirect('/admin/projects')` di akhir Server Action — begitu sukses,
+  browser langsung pindah halaman, tidak ada "jeda" buat nampilin popup.
+- SEKARANG: action-nya TIDAK redirect lagi, tapi RETURN
+  `{ success: boolean, message: string }` (tipe `ActionResult` di
+  src/app/admin/actionResult.ts). Form-nya (ProjectForm/SkillGroupForm/
+  HighlightForm/BioForm) jadi client component yang pakai
+  `useActionState` (React 19) buat nangkep hasil itu, lalu manggil
+  `showAlert()`. Baru SETELAH user klik "OK" di popup (kalau sukses),
+  baru `router.push()` ke halaman list — jadi pindah halamannya terjadi
+  setelah user lihat & tutup popup, bukan langsung.
+
+BUG yang ketemu pas testing & cara perbaikinya (PENTING, jangan diulang):
+Percobaan PERTAMA, tiap form/DeleteButton nyimpen state popup-nya SENDIRI
+(`useState` lokal) dan render `<AlertModal>`-nya sendiri-sendiri. Ternyata
+untuk tombol DELETE ini gagal total — popup-nya TIDAK PERNAH muncul.
+Sebabnya: begitu `deleteProject` (atau sejenisnya) selesai, action itu
+manggil `revalidatePath('/admin/projects')`, yang bikin Next.js
+me-refresh Server Component list-nya — baris (row) untuk item yang baru
+dihapus itu ikut hilang dari DOM, dan `DeleteButton` yang ada DI DALAM
+baris itu ikut ke-unmount BERSAMAAN dengan (atau bahkan SEBELUM)
+`setAlert(...)` sempat jalan. Jadi state popup-nya sempat di-set, tapi
+komponennya sendiri sudah tidak ada lagi buat menampilkannya.
+
+Perbaikannya: state popup-nya DIPINDAH ke satu tempat yang TIDAK IKUT
+hilang waktu list di-refresh — yaitu `AlertProvider.tsx` (React Context),
+yang dipasang SEKALI di `src/app/admin/layout.tsx` (level layout, bukan
+level halaman/baris), sehingga dia tetap hidup walau konten di bawahnya
+(halaman list, baris-barisnya) berubah/hilang. `DeleteButton` dan
+`useAdminForm` sekarang cuma manggil `showAlert()` dari `useAlert()`
+(hook context-nya), TIDAK nyimpen/render `<AlertModal>` sendiri lagi.
+Pelajarannya: kalau ada popup/notifikasi yang dipicu oleh aksi yang BISA
+bikin komponen pemicunya sendiri hilang dari DOM (delete, navigasi,
+dll), state-nya HARUS hidup di komponen leluhur yang tidak ikut hilang,
+bukan di komponen yang memicu aksi itu sendiri.
+
+File-file yang ikut berubah untuk fitur ini (selain yang sudah disebut
+di poin 3): actions.ts di projects/skills/about (return ActionResult,
+bukan redirect), ProjectForm.tsx, SkillGroupForm.tsx, HighlightForm.tsx,
+BioForm.tsx (baru, dipisah dari admin/about/page.tsx) — semua jadi
+'use client' + pakai useAdminForm (TANPA render AlertModal sendiri),
+DeleteButton.tsx (try/catch + showAlert), AlertProvider.tsx (baru),
+admin/layout.tsx (dibungkus AlertProvider), dan tiap halaman new/[id]/
+list yang manggil form-form itu (tambah prop `redirectTo` /
+`successMessage`).
+
+Kalau mau nambah CRUD baru dengan popup yang sama (ikuti pola di atas):
+1. Action-nya return `Promise<ActionResult>` dengan signature
+   `(prevState: ActionResult | null, formData: FormData) => ...`
+   (kalau ada param tambahan kayak `id`, taruh SEBELUM `prevState`, lalu
+   `.bind(null, id)` pas dipakai — persis kayak updateProject).
+2. Form component-nya `'use client'`, panggil
+   `useAdminForm(action, redirectTo)` dari src/app/admin/useAdminForm.ts
+   — TIDAK perlu render `<AlertModal>` sendiri, sudah otomatis lewat
+   AlertProvider yang dipasang di admin/layout.tsx.
+3. Untuk delete, cukup pakai `<DeleteButton action={...} confirmMessage=
+   {...} successMessage={...} />` yang sudah ada, tidak perlu bikin baru.
