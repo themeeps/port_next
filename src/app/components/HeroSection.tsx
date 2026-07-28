@@ -104,7 +104,7 @@ export default function HeroSection() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="max-w-6xl mx-auto px-4 relative z-10 w-full"
+            className="max-w-6xl mx-auto px-4 pt-24 md:pt-0 pb-24 md:pb-0 relative z-10 w-full"
           >
             <div className="max-w-4xl mx-auto text-center">
               <motion.div initial="hidden" animate={visible(0)} variants={itemVariants} className="mb-6">

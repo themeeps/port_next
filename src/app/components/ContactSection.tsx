@@ -45,7 +45,9 @@ export default function ContactSection() {
     <section id="contact" className="py-24 bg-white">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-slate-900">Get In Touch</h2>
+          <h2 className="text-4xl font-bold text-slate-900">
+            Get <span className="text-gradient">In Touch</span>
+          </h2>
           <div className="w-16 h-1 bg-gradient-primary rounded-full mx-auto mt-4" />
         </div>
 
