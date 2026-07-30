@@ -1,15 +1,19 @@
-import { Computer, ExternalLink, Mail } from 'lucide-react';
+'use client';
 
-const navItems = [
-  { name: 'Home', href: '#home' },
-  { name: 'About', href: '#about' },
-  { name: 'Skills', href: '#skills' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'Contact', href: '#contact' },
-];
+import { Computer, ExternalLink, Mail } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { name: t.navbar.home, href: '#home' },
+    { name: t.navbar.about, href: '#about' },
+    { name: t.navbar.skills, href: '#skills' },
+    { name: t.navbar.projects, href: '#projects' },
+    { name: t.navbar.contact, href: '#contact' },
+  ];
 
   return (
     <footer className="bg-slate-900 text-slate-400 pt-16 pb-8">
@@ -19,16 +23,14 @@ export default function Footer() {
             <a href="#home" className="text-gradient text-2xl font-bold">
               Part of Me
             </a>
-            <p className="mt-3 text-sm leading-relaxed">
-              Full Stack Developer who loves building web applications from end to end.
-            </p>
+            <p className="mt-3 text-sm leading-relaxed">{t.footer.tagline}</p>
           </div>
 
           <div>
-            <p className="text-white font-semibold mb-3">Quick Links</p>
+            <p className="text-white font-semibold mb-3">{t.footer.quickLinks}</p>
             <ul className="space-y-2 text-sm">
               {navItems.map((item) => (
-                <li key={item.name}>
+                <li key={item.href}>
                   <a href={item.href} className="hover:text-white transition-colors">
                     {item.name}
                   </a>
@@ -38,7 +40,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-white font-semibold mb-3">Let&apos;s Connect</p>
+            <p className="text-white font-semibold mb-3">{t.footer.connect}</p>
             <div className="flex gap-4">
               <a
                 href="https://github.com/themeeps"
@@ -64,7 +66,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 pt-6 text-center text-sm">
-          <p>&copy; {year} Sayyid Ali Akbar H. All rights reserved.</p>
+          <p>&copy; {year} Sayyid Ali Akbar H. {t.footer.rights}</p>
         </div>
       </div>
     </footer>

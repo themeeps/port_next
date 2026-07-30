@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { Computer, ExternalLink, Mail, ArrowDown, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '../context/LanguageContext';
 
 const TOTAL_STEPS = 6; // avatar, heading, tagline, description, buttons, socials
 
@@ -19,6 +20,7 @@ const itemVariants: Variants = {
 export default function HeroSection() {
   const [step, setStep] = useState(0);
   const unlockedRef = useRef(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const advance = (direction: 1 | -1) => {
@@ -86,7 +88,7 @@ export default function HeroSection() {
             className="text-center px-4"
           >
             <h1 className="text-4xl md:text-6xl font-bold text-white">
-              Hello, welcome to <span className="text-gradient">my portfolio</span>
+              {t.hero.greetingPre} <span className="text-gradient">{t.hero.greetingHighlight}</span>
             </h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -94,7 +96,7 @@ export default function HeroSection() {
               transition={{ delay: 0.8, duration: 0.6 }}
               className="text-slate-400 mt-6 text-sm tracking-wide"
             >
-              Scroll down to explore
+              {t.hero.scrollDown}
             </motion.p>
           </motion.div>
         ) : (
@@ -128,11 +130,11 @@ export default function HeroSection() {
                 variants={itemVariants}
                 className="text-5xl md:text-6xl font-bold text-white mb-4"
               >
-                Hi, I&apos;m <span className="text-gradient">Sayyid Ali Akbar H</span>
+                {t.hero.introPre} <span className="text-gradient">Sayyid Ali Akbar H</span>
               </motion.h1>
 
               <motion.p initial="hidden" animate={visible(2)} variants={itemVariants} className="text-2xl text-white/50 mb-6">
-                Full Stack Developer &amp; Creative Problem Solver
+                {t.hero.tagline}
               </motion.p>
 
               <motion.p
@@ -141,7 +143,7 @@ export default function HeroSection() {
                 variants={itemVariants}
                 className="text-xl text-slate-400 mb-12 mx-auto max-w-150"
               >
-                I craft elegant solutions to complex problems. Specialized in building scalable web applications with modern technologies.
+                {t.hero.description}
               </motion.p>
 
               <motion.div
@@ -151,14 +153,14 @@ export default function HeroSection() {
                 className="flex gap-4 justify-center mb-12 flex-wrap"
               >
                 <a href="#contact" className="btn-gradient inline-block text-white px-12 py-4 font-semibold rounded-full">
-                  Get In Touch
+                  {t.hero.ctaContact}
                 </a>
                 <a href="#projects" className="border-2 border-sky-500 text-sky-500 hover:bg-sky-500 hover:text-white px-12 py-4 font-semibold rounded-full transition-colors">
-                  View My Work
+                  {t.hero.ctaWork}
                 </a>
                 <Link href="/login" className="border-2 border-white/30 text-white hover:bg-white/10 px-12 py-4 font-semibold rounded-full flex items-center gap-2 transition-colors">
                   <LayoutDashboard size={18} />
-                  Admin Dashboard
+                  {t.hero.ctaAdmin}
                 </Link>
               </motion.div>
 

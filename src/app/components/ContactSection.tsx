@@ -3,16 +3,7 @@
 import { useState, type SubmitEvent } from 'react';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
-
-const contactInfo = [
-  { icon: Mail, label: 'Email', value: 'sayyidali195@gmail.com' },
-  { icon: Phone, label: 'Phone', value: '+6281399053740' },
-  {
-    icon: MapPin,
-    label: 'Location',
-    value: 'Cempaka Baru IX No,03 RT003/RW007, Kel. Cempaka Baru, Kec. Kemayoran, Jakarta Pusat, Kodepos : 10640',
-  },
-];
+import { useLanguage } from '../context/LanguageContext';
 
 type Status = 'idle' | 'sending' | 'success' | 'error';
 
@@ -20,6 +11,17 @@ export default function ContactSection() {
   const { ref, isVisible } = useReveal<HTMLDivElement>();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState<Status>('idle');
+  const { t } = useLanguage();
+
+  const contactInfo = [
+    { icon: Mail, label: t.contact.emailLabel, value: 'sayyidali195@gmail.com' },
+    { icon: Phone, label: t.contact.phoneLabel, value: '+6281399053740' },
+    {
+      icon: MapPin,
+      label: t.contact.locationLabel,
+      value: 'Cempaka Baru IX No,03 RT003/RW007, Kel. Cempaka Baru, Kec. Kemayoran, Jakarta Pusat, Kodepos : 10640',
+    },
+  ];
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,7 +48,9 @@ export default function ContactSection() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-slate-900">
-            Get <span className="text-gradient">In Touch</span>
+            {t.contact.headingPre && `${t.contact.headingPre} `}
+            <span className="text-gradient">{t.contact.headingHighlight}</span>
+            {t.contact.headingAfter && ` ${t.contact.headingAfter}`}
           </h2>
           <div className="w-16 h-1 bg-gradient-primary rounded-full mx-auto mt-4" />
         </div>
@@ -56,11 +60,8 @@ export default function ContactSection() {
           className={`reveal ${isVisible ? 'is-visible' : ''} grid md:grid-cols-2 gap-12`}
         >
           <div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">Let&apos;s Work Together</h3>
-            <p className="text-slate-500 leading-relaxed mb-8">
-              I&apos;m always interested in hearing about new projects and opportunities.
-              Whether you have a question or just want to say hi, feel free to reach out!
-            </p>
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">{t.contact.subheading}</h3>
+            <p className="text-slate-500 leading-relaxed mb-8">{t.contact.description}</p>
 
             <div className="space-y-6">
               {contactInfo.map(({ icon: Icon, label, value }) => (
@@ -80,7 +81,7 @@ export default function ContactSection() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="contact-name" className="block font-semibold text-slate-900 mb-2">
-                Name
+                {t.contact.formName}
               </label>
               <input
                 id="contact-name"
@@ -88,14 +89,14 @@ export default function ContactSection() {
                 required
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="Your name"
+                placeholder={t.contact.formNamePlaceholder}
                 className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none"
               />
             </div>
 
             <div>
               <label htmlFor="contact-email" className="block font-semibold text-slate-900 mb-2">
-                Email
+                {t.contact.formEmail}
               </label>
               <input
                 id="contact-email"
@@ -103,14 +104,14 @@ export default function ContactSection() {
                 required
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                placeholder="your.email@example.com"
+                placeholder={t.contact.formEmailPlaceholder}
                 className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none"
               />
             </div>
 
             <div>
               <label htmlFor="contact-message" className="block font-semibold text-slate-900 mb-2">
-                Message
+                {t.contact.formMessage}
               </label>
               <textarea
                 id="contact-message"
@@ -118,7 +119,7 @@ export default function ContactSection() {
                 rows={5}
                 value={form.message}
                 onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                placeholder="Your message..."
+                placeholder={t.contact.formMessagePlaceholder}
                 className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none resize-none"
               />
             </div>
@@ -128,18 +129,14 @@ export default function ContactSection() {
               disabled={status === 'sending'}
               className="btn-gradient w-full text-white font-semibold px-6 py-3 rounded-lg disabled:opacity-60"
             >
-              {status === 'sending' ? 'Sending...' : 'Send Message'}
+              {status === 'sending' ? t.contact.sending : t.contact.send}
             </button>
 
             {status === 'success' && (
-              <p className="text-sm text-green-600 font-medium">
-                Thanks! Your message has been sent — I&apos;ll get back to you soon.
-              </p>
+              <p className="text-sm text-green-600 font-medium">{t.contact.success}</p>
             )}
             {status === 'error' && (
-              <p className="text-sm text-red-600 font-medium">
-                Something went wrong. Please try again or email me directly.
-              </p>
+              <p className="text-sm text-red-600 font-medium">{t.contact.error}</p>
             )}
           </form>
         </div>

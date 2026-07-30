@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { resolveIcon } from '@/lib/icons';
 import { ChevronLeft, ChevronRight, Code2, ExternalLink } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
+import { useLanguage } from '../context/LanguageContext';
 
 type ProjectData = {
   id: string;
@@ -27,6 +28,7 @@ function ProjectCard({
   isVisible: boolean;
   delay: number;
 }) {
+  const { t } = useLanguage();
   const { id, title, description, icon, image, tech, githubUrl, liveUrl } = project;
   const Icon = resolveIcon(icon);
   const hasGithubUrl = githubUrl !== '#';
@@ -71,7 +73,7 @@ function ProjectCard({
                 className="social-icon no-underline inline-flex items-center gap-1.5 text-sm font-medium"
               >
                 <Code2 size={18} />
-                Code
+                {t.projects.code}
               </a>
             )}
             {hasLiveUrl && (
@@ -80,7 +82,7 @@ function ProjectCard({
                 className="social-icon no-underline inline-flex items-center gap-1.5 text-sm font-medium"
               >
                 <ExternalLink size={18} />
-                Live Demo
+                {t.projects.liveDemo}
               </a>
             )}
           </div>

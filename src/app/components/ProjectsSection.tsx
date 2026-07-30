@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import ProjectsGrid from './ProjectsGrid';
+import SectionHeading from './SectionHeading';
 
 export default async function ProjectsSection() {
   const projects = await prisma.project.findMany({ orderBy: { order: 'asc' } });
@@ -19,10 +20,7 @@ export default async function ProjectsSection() {
     <section id="projects" className="py-24 bg-white">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-slate-900">
-            My <span className="text-gradient">Projects</span>
-          </h2>
-          <p className="text-slate-500 mt-3">A few projects I&apos;ve worked on</p>
+          <SectionHeading section="projects" />
         </div>
 
         <ProjectsGrid projects={projectData} />

@@ -1,0 +1,146 @@
+export type Language = 'en' | 'id';
+
+export const translations = {
+  en: {
+    navbar: {
+      home: 'Home',
+      about: 'About',
+      skills: 'Skills',
+      projects: 'Projects',
+      contact: 'Contact',
+      dashboard: 'Dashboard',
+    },
+    hero: {
+      greetingPre: 'Hello, welcome to',
+      greetingHighlight: 'my portfolio',
+      scrollDown: 'Scroll down to explore',
+      introPre: "Hi, I'm",
+      tagline: 'Full Stack Developer & Creative Problem Solver',
+      description:
+        'I craft elegant solutions to complex problems. Specialized in building scalable web applications with modern technologies.',
+      ctaContact: 'Get In Touch',
+      ctaWork: 'View My Work',
+      ctaAdmin: 'Admin Dashboard',
+    },
+    about: {
+      headingPre: 'About',
+      headingHighlight: 'Me',
+      headingAfter: '',
+      subtitle: '',
+    },
+    skills: {
+      headingPre: 'My',
+      headingHighlight: 'Skills',
+      headingAfter: '',
+      subtitle: 'The programming languages and technologies I use on a daily basis.',
+    },
+    projects: {
+      headingPre: 'My',
+      headingHighlight: 'Projects',
+      headingAfter: '',
+      subtitle: "A few projects I've worked on",
+      code: 'Code',
+      liveDemo: 'Live Demo',
+    },
+    contact: {
+      headingPre: 'Get',
+      headingHighlight: 'In Touch',
+      headingAfter: '',
+      subheading: "Let's Work Together",
+      description:
+        "I'm always interested in hearing about new projects and opportunities. Whether you have a question or just want to say hi, feel free to reach out!",
+      emailLabel: 'Email',
+      phoneLabel: 'Phone',
+      locationLabel: 'Location',
+      formName: 'Name',
+      formNamePlaceholder: 'Your name',
+      formEmail: 'Email',
+      formEmailPlaceholder: 'your.email@example.com',
+      formMessage: 'Message',
+      formMessagePlaceholder: 'Your message...',
+      send: 'Send Message',
+      sending: 'Sending...',
+      success: "Thanks! Your message has been sent — I'll get back to you soon.",
+      error: 'Something went wrong. Please try again or email me directly.',
+    },
+    footer: {
+      tagline: 'Full Stack Developer who loves building web applications from end to end.',
+      quickLinks: 'Quick Links',
+      connect: "Let's Connect",
+      rights: 'All rights reserved.',
+    },
+  },
+  id: {
+    navbar: {
+      home: 'Beranda',
+      about: 'Tentang',
+      skills: 'Keahlian',
+      projects: 'Proyek',
+      contact: 'Kontak',
+      dashboard: 'Dashboard',
+    },
+    hero: {
+      greetingPre: 'Halo, selamat datang di',
+      greetingHighlight: 'portofolio saya',
+      scrollDown: 'Gulir ke bawah untuk menjelajah',
+      introPre: 'Hai, saya',
+      tagline: 'Full Stack Developer & Pemecah Masalah Kreatif',
+      description:
+        'Saya merancang solusi elegan untuk masalah yang kompleks. Berpengalaman membangun aplikasi web yang skalabel dengan teknologi modern.',
+      ctaContact: 'Hubungi Saya',
+      ctaWork: 'Lihat Karya Saya',
+      ctaAdmin: 'Dashboard Admin',
+    },
+    about: {
+      headingPre: 'Tentang',
+      headingHighlight: 'Saya',
+      headingAfter: '',
+      subtitle: '',
+    },
+    skills: {
+      headingPre: '',
+      headingHighlight: 'Keahlian',
+      headingAfter: 'Saya',
+      subtitle: 'Bahasa pemrograman dan teknologi yang saya gunakan sehari-hari.',
+    },
+    projects: {
+      headingPre: '',
+      headingHighlight: 'Proyek',
+      headingAfter: 'Saya',
+      subtitle: 'Beberapa proyek yang pernah saya kerjakan',
+      code: 'Kode',
+      liveDemo: 'Live Demo',
+    },
+    contact: {
+      headingPre: '',
+      headingHighlight: 'Hubungi',
+      headingAfter: 'Saya',
+      subheading: 'Mari Bekerja Sama',
+      description:
+        'Saya selalu tertarik mendengar tentang proyek dan peluang baru. Baik Anda punya pertanyaan atau sekadar ingin menyapa, jangan ragu untuk menghubungi!',
+      emailLabel: 'Email',
+      phoneLabel: 'Telepon',
+      locationLabel: 'Lokasi',
+      formName: 'Nama',
+      formNamePlaceholder: 'Nama Anda',
+      formEmail: 'Email',
+      formEmailPlaceholder: 'email.anda@contoh.com',
+      formMessage: 'Pesan',
+      formMessagePlaceholder: 'Pesan Anda...',
+      send: 'Kirim Pesan',
+      sending: 'Mengirim...',
+      success: 'Terima kasih! Pesan Anda telah terkirim — saya akan segera membalas.',
+      error: 'Terjadi kesalahan. Silakan coba lagi atau email saya langsung.',
+    },
+    footer: {
+      tagline: 'Full Stack Developer yang senang membangun aplikasi web dari awal hingga akhir.',
+      quickLinks: 'Tautan Cepat',
+      connect: 'Mari Terhubung',
+      rights: 'Semua hak dilindungi.',
+    },
+  },
+} as const;
+
+type Widen<T> = { [K in keyof T]: { [K2 in keyof T[K]]: string } };
+
+export type Translations = Widen<typeof translations.en>;

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { resolveIcon } from '@/lib/icons';
+import SectionHeading from './SectionHeading';
 
 export default async function AboutSection() {
   const [content, highlights] = await Promise.all([
@@ -11,9 +12,7 @@ export default async function AboutSection() {
     <section id="about" className="py-32 bg-white">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-slate-900">
-            About <span className="text-gradient">Me</span>
-          </h2>
+          <SectionHeading section="about" />
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
