@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { Computer, ExternalLink, Mail, ArrowDown, LayoutDashboard } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -81,23 +82,21 @@ export default function HeroSection() {
         {step === 0 ? (
           <motion.div
             key="greeting"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, y: -24 }}
             transition={{ duration: 0.5 }}
             className="text-center px-4"
           >
-            <h1 className="text-4xl md:text-6xl font-bold text-white">
+            <h1 className="text-4xl md:text-6xl font-bold text-white animate-fade-in">
               {t.hero.greetingPre} <span className="text-gradient">{t.hero.greetingHighlight}</span>
             </h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.6 }}
-              className="text-slate-400 mt-6 text-sm tracking-wide"
+            <p
+              className="text-slate-400 mt-6 text-sm tracking-wide animate-fade-in"
+              style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}
             >
               {t.hero.scrollDown}
-            </motion.p>
+            </p>
           </motion.div>
         ) : (
           <motion.div
@@ -112,12 +111,12 @@ export default function HeroSection() {
               <motion.div initial="hidden" animate={visible(0)} variants={itemVariants} className="mb-6">
                 <div className="inline-block p-1 rounded-full bg-gradient-primary">
                   <div className="bg-slate-900 rounded-full flex items-center justify-center text-gradient font-bold w-41.25 h-52.25 text-5xl">
-                    <img
+                    <Image
                       src="/images/formal_photo.jpeg"
                       className="rounded-full"
                       alt="John Programmer"
-                      width="165"
-                      height="165"
+                      width={165}
+                      height={165}
                       style={{ height: '100%' }}
                     />
                   </div>

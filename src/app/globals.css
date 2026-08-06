@@ -6,11 +6,11 @@
     Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
   --animate-blob-1:
-    blob-move-1 18s ease-in-out infinite alternate,
-    blob-pulse 6s ease-in-out infinite;
+    blob-move-1 12s ease-in-out infinite alternate,
+    blob-pulse 4s ease-in-out infinite;
   --animate-blob-2:
-    blob-move-2 18s ease-in-out 5s infinite alternate,
-    blob-pulse 6s ease-in-out 5s infinite;
+    blob-move-2 12s ease-in-out 3s infinite alternate,
+    blob-pulse 4s ease-in-out 3s infinite;
   --animate-soft-bounce: soft-bounce 2s infinite;
   --animate-fade-in: fade-in 0.2s ease;
   --animate-slide-up: slide-up 0.25s ease;
@@ -57,12 +57,12 @@
   @keyframes blob-pulse {
     0%,
     100% {
-      opacity: 0.35;
-      filter: blur(120px);
+      opacity: 0.55;
+      filter: blur(80px);
     }
     50% {
-      opacity: 0.6;
-      filter: blur(150px);
+      opacity: 0.85;
+      filter: blur(105px);
     }
   }
 
@@ -173,7 +173,7 @@ button:not(:disabled) {
 .hero-section::before,
 .hero-section::after {
   content: "";
-  @apply absolute w-175 h-175 rounded-full blur-[140px] opacity-45 mix-blend-screen origin-center;
+  @apply absolute w-175 h-175 rounded-full blur-[90px] opacity-65 mix-blend-screen origin-center;
 }
 
 /* Blob 1 - Electric Blue */

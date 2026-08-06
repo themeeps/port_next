@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { resolveIcon } from '@/lib/icons';
 import { ChevronLeft, ChevronRight, Code2, ExternalLink } from 'lucide-react';
 import { useReveal } from '../hooks/useReveal';
@@ -41,7 +42,15 @@ function ProjectCard({
       style={{ transitionDelay: `${delay}ms` }}
     >
       {image ? (
-        <img src={image} alt={title} className="project-image w-full" />
+        <div className="relative w-full h-62.5 overflow-hidden">
+          <Image
+            src={image}
+            alt={title}
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="project-image object-cover"
+          />
+        </div>
       ) : (
         <div className="project-image bg-gradient-primary flex items-center justify-center overflow-hidden">
           <Icon size={56} className="text-white/90" />

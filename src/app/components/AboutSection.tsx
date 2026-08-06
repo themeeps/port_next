@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { prisma } from '@/lib/prisma';
 import { resolveIcon } from '@/lib/icons';
 import SectionHeading from './SectionHeading';
@@ -17,10 +18,12 @@ export default async function AboutSection() {
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="mx-auto w-full max-w-sm rounded-2xl bg-gradient-primary p-1">
-            <img
-              src="/images/profile_ali.png"
+            <Image
+              src="/images/profile_ali.jpg"
               alt="Sayyid Ali Akbar H"
-              className="w-full h-full rounded-2xl object-cover"
+              width={628}
+              height={583}
+              className="w-full h-auto rounded-2xl object-cover"
             />
           </div>
 
