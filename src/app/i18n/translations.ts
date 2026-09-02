@@ -69,6 +69,16 @@ export const translations = {
       connect: "Let's Connect",
       rights: 'All rights reserved.',
     },
+    chatbot: {
+      title: 'Chat with me',
+      subtitle: "Usually replies right away",
+      openLabel: 'Open chat',
+      closeLabel: 'Close chat',
+      placeholder: 'Type a message...',
+      send: 'Send',
+      welcomeMessage: "Hi there! 👋 Ask me anything about Sayyid's skills, projects, or experience.",
+      error: 'Something went wrong. Please try again in a moment.',
+    },
   },
   id: {
     navbar: {
@@ -137,6 +147,16 @@ export const translations = {
       quickLinks: 'Tautan Cepat',
       connect: 'Mari Terhubung',
       rights: 'Semua hak dilindungi.',
+    },
+    chatbot: {
+      title: 'Chat dengan saya',
+      subtitle: 'Biasanya langsung dibalas',
+      openLabel: 'Buka chat',
+      closeLabel: 'Tutup chat',
+      placeholder: 'Ketik pesan...',
+      send: 'Kirim',
+      welcomeMessage: 'Hai! 👋 Tanya apa saja soal skill, project, atau pengalaman Sayyid.',
+      error: 'Terjadi kesalahan. Silakan coba lagi sebentar lagi.',
     },
   },
 } as const;

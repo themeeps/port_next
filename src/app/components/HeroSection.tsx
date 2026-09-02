@@ -86,7 +86,7 @@ export default function HeroSection() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, y: -24 }}
             transition={{ duration: 0.5 }}
-            className="text-center px-4"
+            className="relative z-10 text-center px-4"
           >
             <h1 className="text-4xl md:text-6xl font-bold text-white animate-fade-in">
               {t.hero.greetingPre} <span className="text-gradient">{t.hero.greetingHighlight}</span>
