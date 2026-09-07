@@ -17,7 +17,7 @@ export const translations = {
       introPre: "Hi, I'm",
       tagline: 'Full Stack Developer & Creative Problem Solver',
       description:
-        'I craft elegant solutions to complex problems. Specialized in building scalable web applications with modern technologies.',
+        'Designing efficient and effective solutions to complex problems. Experienced in building scalable web applications with modern technologies.',
       ctaContact: 'Get In Touch',
       ctaWork: 'View My Work',
       ctaAdmin: 'Admin Dashboard',
@@ -96,7 +96,7 @@ export const translations = {
       introPre: 'Hai, saya',
       tagline: 'Full Stack Developer & Pemecah Masalah Kreatif',
       description:
-        'Saya merancang solusi elegan untuk masalah yang kompleks. Berpengalaman membangun aplikasi web yang skalabel dengan teknologi modern.',
+        'Merancang solusi yang efisien dan tepat guna untuk masalah kompleks. Berpengalaman membangun aplikasi web yang skalabel dengan teknologi modern.',
       ctaContact: 'Hubungi Saya',
       ctaWork: 'Lihat Karya Saya',
       ctaAdmin: 'Dashboard Admin',

@@ -9,8 +9,10 @@ import { useLanguage } from '../context/LanguageContext';
 
 type ProjectData = {
   id: string;
-  title: string;
-  description: string;
+  titleEn: string;
+  titleId: string;
+  descriptionEn: string;
+  descriptionId: string;
   icon: string;
   image?: string | null;
   tech: string[];
@@ -29,8 +31,10 @@ function ProjectCard({
   isVisible: boolean;
   delay: number;
 }) {
-  const { t } = useLanguage();
-  const { id, title, description, icon, image, tech, githubUrl, liveUrl } = project;
+  const { t, language } = useLanguage();
+  const { id, titleEn, titleId, descriptionEn, descriptionId, icon, image, tech, githubUrl, liveUrl } = project;
+  const title = language === 'en' ? titleEn : titleId;
+  const description = language === 'en' ? descriptionEn : descriptionId;
   const Icon = resolveIcon(icon);
   const hasGithubUrl = githubUrl !== '#';
   const hasLiveUrl = liveUrl !== '#';

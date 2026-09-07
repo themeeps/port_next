@@ -19,46 +19,53 @@ model AdminUser {
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  icon        String
-  image       String? // Vercel Blob URL; falls back to the gradient+icon placeholder when empty
-  tech        String // JSON-encoded string[]
-  githubUrl   String
-  liveUrl     String
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  titleEn       String
+  titleId       String
+  descriptionEn String
+  descriptionId String
+  icon          String
+  image         String? // Vercel Blob URL; falls back to the gradient+icon placeholder when empty
+  tech          String // JSON-encoded string[]
+  githubUrl     String
+  liveUrl       String
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model SkillGroup {
   id        String          @id @default(cuid())
-  title     String
+  titleEn   String
+  titleId   String
   icon      String
   order     Int             @default(0)
-  skills    String? // JSON-encoded string[], used when there are no subgroups
+  skills    String? // JSON-encoded string[], used when there are no subgroups — tech names, not translated
   subgroups SkillSubgroup[]
 }
 
 model SkillSubgroup {
   id           String     @id @default(cuid())
-  label        String
-  skills       String // JSON-encoded string[]
+  labelEn      String
+  labelId      String
+  skills       String // JSON-encoded string[] — tech names, not translated
   order        Int        @default(0)
   skillGroup   SkillGroup @relation(fields: [skillGroupId], references: [id], onDelete: Cascade)
   skillGroupId String
 }
 
 model AboutContent {
-  id  String @id @default("about")
-  bio String
+  id    String @id @default("about")
+  bioEn String
+  bioId String
 }
 
 model AboutHighlight {
-  id    String @id @default(cuid())
-  icon  String
-  title String
-  desc  String
-  order Int    @default(0)
+  id      String @id @default(cuid())
+  icon    String
+  titleEn String
+  titleId String
+  descEn  String
+  descId  String
+  order   Int    @default(0)
 }

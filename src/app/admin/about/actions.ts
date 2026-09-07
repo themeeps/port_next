@@ -10,13 +10,14 @@ export async function updateBio(
   formData: FormData
 ): Promise<ActionResult> {
   await requireAdmin();
-  const bio = String(formData.get('bio') ?? '');
+  const bioEn = String(formData.get('bioEn') ?? '');
+  const bioId = String(formData.get('bioId') ?? '');
 
   try {
     await prisma.aboutContent.upsert({
       where: { id: 'about' },
-      update: { bio },
-      create: { id: 'about', bio },
+      update: { bioEn, bioId },
+      create: { id: 'about', bioEn, bioId },
     });
   } catch (error) {
     console.error('updateBio failed:', error);
@@ -31,8 +32,10 @@ export async function updateBio(
 function highlightDataFromForm(formData: FormData) {
   return {
     icon: String(formData.get('icon') ?? ''),
-    title: String(formData.get('title') ?? ''),
-    desc: String(formData.get('desc') ?? ''),
+    titleEn: String(formData.get('titleEn') ?? ''),
+    titleId: String(formData.get('titleId') ?? ''),
+    descEn: String(formData.get('descEn') ?? ''),
+    descId: String(formData.get('descId') ?? ''),
     order: Number(formData.get('order')) || 0,
   };
 }

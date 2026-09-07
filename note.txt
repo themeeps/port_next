@@ -79,11 +79,17 @@ Homepage publik:
   SectionHeading.tsx        - heading kecil client, dipakai About/Skills/
                            Projects section supaya heading-nya bisa ikut
                            toggle bahasa walau section induknya server
+  AboutContent.tsx          - client, sama pola-nya kayak SkillsGrid/
+                           ProjectsGrid: AboutSection (server) fetch semua
+                           kolom *En/*Id dari Prisma lalu oper ke sini,
+                           komponen ini yang milih field sesuai `language`
   ContactSection.tsx        - client, submit ke /api/contact
   ChatbotButton.tsx         - floating chat button + panel, panggil /api/chat
   i18n/translations.ts + context/LanguageContext.tsx
-                          - toggle EN/ID (localStorage), CUMA teks statis,
-                           bukan konten database
+                          - toggle EN/ID (localStorage). Teks statis (nav,
+                           hero, heading, dst) dari translations.ts; konten
+                           database (Project/Skill/About) dari kolom *En/*Id
+                           masing-masing tabel (lihat poin 5 & 6)
 
 Admin CMS (/login, /admin — proteksi via proxy.ts + requireAdmin()):
   auth.ts / auth.config.ts / proxy.ts
@@ -123,13 +129,19 @@ API routes:
   di translations.ts / hardcoded)
 - Upload gambar cuma ada untuk Project screenshot. Foto profil About & foto
   Hero masih file statis di /public/images (belum ada field DB-nya)
-- Toggle bahasa EN/ID: CUMA teks statis (nav, hero, heading, form Contact,
-  footer). Konten dari database (judul/deskripsi Project, nama Skill, bio
-  About) TIDAK ikut diterjemahkan — kalau mau, perlu kolom terjemahan
-  terpisah per field di schema Prisma + form admin 2 bahasa (belum dikerjakan)
+- Toggle bahasa EN/ID SEKARANG translate SEMUA teks deskriptif, termasuk
+  konten database: Project (judul+deskripsi), SkillGroup (judul) + Skill-
+  Subgroup (label), About (bio + judul+deskripsi tiap highlight). Field-nya
+  disimpan dobel per bahasa (`titleEn`/`titleId`, dst — lihat poin 6). Yang
+  TIDAK diterjemahkan: nama skill/tech itu sendiri (React, Laravel, dst —
+  proper noun, sama di semua bahasa) dan seluruh teks statis Hero/Navbar/
+  Footer/Contact (tetap dari translations.ts seperti biasa).
+- Form admin (Project/SkillGroup/Highlight/Bio) sekarang punya 2 input
+  berdampingan per field yang bisa diterjemahkan (English & Indonesia)
 - Chatbot SUDAH terhubung ke Gemini, jawab berdasar data Projects/Skills/
-  About dari database, dan menolak sopan pertanyaan di luar topik portfolio
-  (instruksinya ada di system prompt, src/lib/chatbot.ts)
+  About dari database (pakai kolom *En sebagai referensi — modelnya sendiri
+  yang menyesuaikan bahasa balasan ke bahasa visitor), dan menolak sopan
+  pertanyaan di luar topik portfolio (instruksinya di src/lib/chatbot.ts)
 - Field `tech`/`skills` di DB masih JSON string (peninggalan era SQLite),
   bukan native Postgres array — bisa disederhanakan kalau mau, tidak wajib
 - Cuma 1 admin user (dari seed), tidak ada registrasi/role/lupa-password
@@ -160,6 +172,21 @@ API routes:
   pakai `SubmitEvent<HTMLFormElement>`.
 - `next/image` butuh `images.remotePatterns` di `next.config.ts` kalau
   sumber gambarnya remote host (mis. Vercel Blob) — tanpa ini akan reject.
+- **Pola field 2 bahasa** (`titleEn`/`titleId`, dst): pilihan-nya kolom
+  duplikat per field (bukan tabel terjemahan terpisah) — simpel buat skala
+  project ini. Server component (About/Skills/Projects Section.tsx) TETAP
+  fetch SEMUA kolom bahasa dari Prisma lalu oper keduanya ke client
+  component (Grid/Content) — bahasa aktif ada di client-only state
+  (`localStorage`), server TIDAK tahu bahasa mana yang aktif, jadi pemilihan
+  field `*En` vs `*Id` HARUS terjadi di client component, bukan di server.
+- `npx prisma migrate dev` (mode interaktif) GAGAL kalau dijalankan dari
+  shell non-interactive (agent/CI) DAN skema-nya nambah kolom required ke
+  tabel yang sudah ada isinya (Prisma minta konfirmasi cara handle data
+  lama). Solusinya: bikin folder migrasi manual di
+  `prisma/migrations/<timestamp>_<nama>/migration.sql` isi SQL sendiri
+  (ADD COLUMN nullable → UPDATE backfill dari kolom lama → SET NOT NULL →
+  DROP kolom lama), lalu `npx prisma migrate deploy` (non-interactive,
+  langsung apply + catat ke `_prisma_migrations`).
 - **Turbopack dev cache kadang basi**: perubahan CSS/komponen tidak ke-
   reflect walau dev server sudah di-restart. Fix: `rm -rf .next` lalu
   `npm run dev` lagi.

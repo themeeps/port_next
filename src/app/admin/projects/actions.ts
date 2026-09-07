@@ -17,8 +17,10 @@ function parseTechList(value: FormDataEntryValue | null): string {
 
 function projectDataFromForm(formData: FormData) {
   return {
-    title: String(formData.get('title') ?? ''),
-    description: String(formData.get('description') ?? ''),
+    titleEn: String(formData.get('titleEn') ?? ''),
+    titleId: String(formData.get('titleId') ?? ''),
+    descriptionEn: String(formData.get('descriptionEn') ?? ''),
+    descriptionId: String(formData.get('descriptionId') ?? ''),
     icon: String(formData.get('icon') ?? ''),
     tech: parseTechList(formData.get('tech')),
     githubUrl: String(formData.get('githubUrl') ?? ''),

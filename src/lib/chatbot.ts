@@ -20,25 +20,25 @@ export async function buildSystemPrompt(): Promise<string> {
   const skillsText = skillGroups
     .map((group) => {
       if (group.skills) {
-        return `- ${group.title}: ${(JSON.parse(group.skills) as string[]).join(', ')}`;
+        return `- ${group.titleEn}: ${(JSON.parse(group.skills) as string[]).join(', ')}`;
       }
       const subgroupText = group.subgroups
-        .map((s) => `${s.label}: ${(JSON.parse(s.skills) as string[]).join(', ')}`)
+        .map((s) => `${s.labelEn}: ${(JSON.parse(s.skills) as string[]).join(', ')}`)
         .join(' | ');
-      return `- ${group.title}: ${subgroupText}`;
+      return `- ${group.titleEn}: ${subgroupText}`;
     })
     .join('\n');
 
   const projectsText = projects
-    .map((p) => `- ${p.title}: ${p.description} (Tech: ${(JSON.parse(p.tech) as string[]).join(', ')})`)
+    .map((p) => `- ${p.titleEn}: ${p.descriptionEn} (Tech: ${(JSON.parse(p.tech) as string[]).join(', ')})`)
     .join('\n');
 
-  const highlightsText = highlights.map((h) => `- ${h.title}: ${h.desc}`).join('\n');
+  const highlightsText = highlights.map((h) => `- ${h.titleEn}: ${h.descEn}`).join('\n');
 
-  return `You are the AI assistant embedded in Sayyid Ali Akbar H's personal portfolio website ("Part of Me"). Answer visitor questions about him, his skills, and his projects using ONLY the information below. Be friendly and concise (2-4 sentences unless the visitor asks for more detail). Reply in the same language the visitor writes in (English or Indonesian). If you don't have information to answer something, say so honestly and suggest they use the site's Contact form instead of guessing.
+  return `You are the AI assistant embedded in Sayyid Ali Akbar H's personal portfolio website ("Part of Me"). Answer visitor questions about him, his skills, and his projects using ONLY the information below. Be friendly and concise (2-4 sentences unless the visitor asks for more detail). Reply in the same language the visitor writes in (English or Indonesian) — the reference info below is in English regardless, translate/rephrase it naturally when replying in Indonesian. If you don't have information to answer something, say so honestly and suggest they use the site's Contact form instead of guessing.
 
 ABOUT:
-${about?.bio ?? 'No bio available.'}
+${about?.bioEn ?? 'No bio available.'}
 
 HIGHLIGHTS:
 ${highlightsText || 'None listed.'}

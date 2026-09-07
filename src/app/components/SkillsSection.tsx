@@ -10,12 +10,17 @@ export default async function SkillsSection() {
 
   const skillGroups = groups.map((group) => ({
     id: group.id,
-    title: group.title,
+    titleEn: group.titleEn,
+    titleId: group.titleId,
     icon: group.icon,
     skills: group.skills ? (JSON.parse(group.skills) as string[]) : undefined,
     subgroups:
       group.subgroups.length > 0
-        ? group.subgroups.map((s) => ({ label: s.label, skills: JSON.parse(s.skills) as string[] }))
+        ? group.subgroups.map((s) => ({
+            labelEn: s.labelEn,
+            labelId: s.labelId,
+            skills: JSON.parse(s.skills) as string[],
+          }))
         : undefined,
   }));
 

@@ -27,8 +27,8 @@ export default async function AdminProjectsPage() {
             className="user-card bg-white p-5 flex items-center justify-between"
           >
             <div>
-              <p className="font-semibold text-slate-900">{project.title}</p>
-              <p className="text-slate-500 text-sm">{project.description}</p>
+              <p className="font-semibold text-slate-900">{project.titleEn}</p>
+              <p className="text-slate-500 text-sm">{project.descriptionEn}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Link href={`/admin/projects/${project.id}`} className="social-icon no-underline p-2">
@@ -36,8 +36,8 @@ export default async function AdminProjectsPage() {
               </Link>
               <DeleteButton
                 action={deleteProject.bind(null, project.id)}
-                confirmMessage={`Delete "${project.title}"?`}
-                successMessage={`"${project.title}" deleted successfully.`}
+                confirmMessage={`Delete "${project.titleEn}"?`}
+                successMessage={`"${project.titleEn}" deleted successfully.`}
               />
             </div>
           </div>

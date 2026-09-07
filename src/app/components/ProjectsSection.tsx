@@ -7,8 +7,10 @@ export default async function ProjectsSection() {
 
   const projectData = projects.map((project) => ({
     id: project.id,
-    title: project.title,
-    description: project.description,
+    titleEn: project.titleEn,
+    titleId: project.titleId,
+    descriptionEn: project.descriptionEn,
+    descriptionId: project.descriptionId,
     icon: project.icon,
     image: project.image,
     tech: JSON.parse(project.tech) as string[],

@@ -19,8 +19,10 @@ export default async function EditProjectPage({
         action={updateProject.bind(null, id)}
         redirectTo="/admin/projects"
         defaultValues={{
-          title: project.title,
-          description: project.description,
+          titleEn: project.titleEn,
+          titleId: project.titleId,
+          descriptionEn: project.descriptionEn,
+          descriptionId: project.descriptionId,
           icon: project.icon,
           image: project.image,
           tech: JSON.parse(project.tech) as string[],

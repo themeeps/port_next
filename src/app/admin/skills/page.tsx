@@ -27,10 +27,10 @@ export default async function AdminSkillsPage() {
         {groups.map((group) => (
           <div key={group.id} className="user-card bg-white p-5 flex items-center justify-between">
             <div>
-              <p className="font-semibold text-slate-900">{group.title}</p>
+              <p className="font-semibold text-slate-900">{group.titleEn}</p>
               <p className="text-slate-500 text-sm">
                 {group.subgroups.length > 0
-                  ? group.subgroups.map((s) => s.label).join(' / ')
+                  ? group.subgroups.map((s) => s.labelEn).join(' / ')
                   : (JSON.parse(group.skills ?? '[]') as string[]).join(', ')}
               </p>
             </div>
@@ -40,8 +40,8 @@ export default async function AdminSkillsPage() {
               </Link>
               <DeleteButton
                 action={deleteSkillGroup.bind(null, group.id)}
-                confirmMessage={`Delete "${group.title}"?`}
-                successMessage={`"${group.title}" deleted successfully.`}
+                confirmMessage={`Delete "${group.titleEn}"?`}
+                successMessage={`"${group.titleEn}" deleted successfully.`}
               />
             </div>
           </div>

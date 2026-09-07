@@ -15,12 +15,14 @@ function parseList(value: FormDataEntryValue | null): string[] {
 async function replaceSubgroups(skillGroupId: string, formData: FormData) {
   await prisma.skillSubgroup.deleteMany({ where: { skillGroupId } });
 
-  const subgroups: { label: string; skills: string; order: number }[] = [];
+  const subgroups: { labelEn: string; labelId: string; skills: string; order: number }[] = [];
   for (let i = 0; i < 2; i++) {
-    const label = String(formData.get(`subgroupLabel${i}`) ?? '').trim();
-    if (!label) continue;
+    const labelEn = String(formData.get(`subgroupLabelEn${i}`) ?? '').trim();
+    if (!labelEn) continue;
+    const labelId = String(formData.get(`subgroupLabelId${i}`) ?? '').trim();
     subgroups.push({
-      label,
+      labelEn,
+      labelId: labelId || labelEn,
       skills: JSON.stringify(parseList(formData.get(`subgroupSkills${i}`))),
       order: i,
     });
@@ -35,11 +37,12 @@ async function replaceSubgroups(skillGroupId: string, formData: FormData) {
 
 function groupDataFromForm(formData: FormData) {
   const hasSubgroups =
-    String(formData.get('subgroupLabel0') ?? '').trim() !== '' ||
-    String(formData.get('subgroupLabel1') ?? '').trim() !== '';
+    String(formData.get('subgroupLabelEn0') ?? '').trim() !== '' ||
+    String(formData.get('subgroupLabelEn1') ?? '').trim() !== '';
 
   return {
-    title: String(formData.get('title') ?? ''),
+    titleEn: String(formData.get('titleEn') ?? ''),
+    titleId: String(formData.get('titleId') ?? ''),
     icon: String(formData.get('icon') ?? ''),
     order: Number(formData.get('order')) || 0,
     skills: hasSubgroups ? null : JSON.stringify(parseList(formData.get('skills'))),

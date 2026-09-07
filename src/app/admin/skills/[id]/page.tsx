@@ -22,12 +22,14 @@ export default async function EditSkillGroupPage({
         action={updateSkillGroup.bind(null, id)}
         redirectTo="/admin/skills"
         defaultValues={{
-          title: group.title,
+          titleEn: group.titleEn,
+          titleId: group.titleId,
           icon: group.icon,
           order: group.order,
           skills: group.skills ? (JSON.parse(group.skills) as string[]) : undefined,
           subgroups: group.subgroups.map((s) => ({
-            label: s.label,
+            labelEn: s.labelEn,
+            labelId: s.labelId,
             skills: JSON.parse(s.skills) as string[],
           })),
         }}

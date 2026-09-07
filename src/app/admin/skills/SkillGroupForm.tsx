@@ -5,11 +5,12 @@ import { useAdminForm } from '../useAdminForm';
 import type { ActionResult } from '../actionResult';
 
 type SkillGroupFormValues = {
-  title?: string;
+  titleEn?: string;
+  titleId?: string;
   icon?: string;
   order?: number;
   skills?: string[];
-  subgroups?: { label: string; skills: string[] }[];
+  subgroups?: { labelEn: string; labelId: string; skills: string[] }[];
 };
 
 export default function SkillGroupForm({
@@ -27,14 +28,25 @@ export default function SkillGroupForm({
 
   return (
     <form action={formAction} className="space-y-5 max-w-2xl">
-      <div>
-        <label className="block font-semibold text-slate-900 mb-2">Title</label>
-        <input
-          name="title"
-          required
-          defaultValue={defaultValues?.title}
-          className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none"
-        />
+      <div className="grid sm:grid-cols-2 gap-5">
+        <div>
+          <label className="block font-semibold text-slate-900 mb-2">Title (English)</label>
+          <input
+            name="titleEn"
+            required
+            defaultValue={defaultValues?.titleEn}
+            className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold text-slate-900 mb-2">Title (Indonesia)</label>
+          <input
+            name="titleId"
+            required
+            defaultValue={defaultValues?.titleId}
+            className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none"
+          />
+        </div>
       </div>
 
       <div>
@@ -78,14 +90,25 @@ export default function SkillGroupForm({
 
       <div className="rounded-xl border border-slate-200 p-5 space-y-4">
         <p className="font-semibold text-slate-900">Subgroup 1 (optional)</p>
-        <div>
-          <label className="block text-sm text-slate-500 mb-1">Label</label>
-          <input
-            name="subgroupLabel0"
-            defaultValue={sub0?.label}
-            placeholder="Language"
-            className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none"
-          />
+        <div className="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-sm text-slate-500 mb-1">Label (English)</label>
+            <input
+              name="subgroupLabelEn0"
+              defaultValue={sub0?.labelEn}
+              placeholder="Language"
+              className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-slate-500 mb-1">Label (Indonesia)</label>
+            <input
+              name="subgroupLabelId0"
+              defaultValue={sub0?.labelId}
+              placeholder="Bahasa"
+              className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none"
+            />
+          </div>
         </div>
         <div>
           <label className="block text-sm text-slate-500 mb-1">Skills (comma-separated)</label>
@@ -100,14 +123,25 @@ export default function SkillGroupForm({
 
       <div className="rounded-xl border border-slate-200 p-5 space-y-4">
         <p className="font-semibold text-slate-900">Subgroup 2 (optional)</p>
-        <div>
-          <label className="block text-sm text-slate-500 mb-1">Label</label>
-          <input
-            name="subgroupLabel1"
-            defaultValue={sub1?.label}
-            placeholder="Framework"
-            className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none"
-          />
+        <div className="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-sm text-slate-500 mb-1">Label (English)</label>
+            <input
+              name="subgroupLabelEn1"
+              defaultValue={sub1?.labelEn}
+              placeholder="Framework"
+              className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-slate-500 mb-1">Label (Indonesia)</label>
+            <input
+              name="subgroupLabelId1"
+              defaultValue={sub1?.labelId}
+              placeholder="Framework"
+              className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none"
+            />
+          </div>
         </div>
         <div>
           <label className="block text-sm text-slate-500 mb-1">Skills (comma-separated)</label>

@@ -15,7 +15,7 @@ export default async function AdminAboutPage() {
     <div className="space-y-10">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 mb-6">About — Bio</h1>
-        <BioForm bio={content?.bio} />
+        <BioForm bioEn={content?.bioEn} bioId={content?.bioId} />
       </div>
 
       <div>
@@ -37,8 +37,8 @@ export default async function AdminAboutPage() {
               className="user-card bg-white p-5 flex items-center justify-between"
             >
               <div>
-                <p className="font-semibold text-slate-900">{highlight.title}</p>
-                <p className="text-slate-500 text-sm">{highlight.desc}</p>
+                <p className="font-semibold text-slate-900">{highlight.titleEn}</p>
+                <p className="text-slate-500 text-sm">{highlight.descEn}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Link
@@ -49,8 +49,8 @@ export default async function AdminAboutPage() {
                 </Link>
                 <DeleteButton
                   action={deleteHighlight.bind(null, highlight.id)}
-                  confirmMessage={`Delete "${highlight.title}"?`}
-                  successMessage={`"${highlight.title}" deleted successfully.`}
+                  confirmMessage={`Delete "${highlight.titleEn}"?`}
+                  successMessage={`"${highlight.titleEn}" deleted successfully.`}
                 />
               </div>
             </div>

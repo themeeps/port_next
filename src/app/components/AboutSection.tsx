@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { prisma } from '@/lib/prisma';
-import { resolveIcon } from '@/lib/icons';
 import SectionHeading from './SectionHeading';
+import AboutContent from './AboutContent';
 
 export default async function AboutSection() {
   const [content, highlights] = await Promise.all([
@@ -27,24 +27,7 @@ export default async function AboutSection() {
             />
           </div>
 
-          <div>
-            <p className="text-slate-600 leading-relaxed mb-4">{content?.bio}</p>
-
-            <div className="grid sm:grid-cols-3 gap-4">
-              {highlights.map(({ id, icon, title, desc }) => {
-                const Icon = resolveIcon(icon);
-                return (
-                  <div key={id} className="card-hover bg-slate-50 rounded-xl p-5">
-                    <div className="icon-box mb-3">
-                      <Icon size={22} />
-                    </div>
-                    <h3 className="font-semibold text-slate-900 mb-1">{title}</h3>
-                    <p className="text-sm text-slate-500">{desc}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <AboutContent bioEn={content?.bioEn ?? ''} bioId={content?.bioId ?? ''} highlights={highlights} />
         </div>
       </div>
     </section>

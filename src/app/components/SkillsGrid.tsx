@@ -2,13 +2,15 @@
 
 import { resolveIcon } from '@/lib/icons';
 import { useReveal } from '../hooks/useReveal';
+import { useLanguage } from '../context/LanguageContext';
 
 type SkillGroupData = {
   id: string;
-  title: string;
+  titleEn: string;
+  titleId: string;
   icon: string;
   skills?: string[];
-  subgroups?: { label: string; skills: string[] }[];
+  subgroups?: { labelEn: string; labelId: string; skills: string[] }[];
 };
 
 function SkillBadges({ skills }: { skills: string[] }) {
@@ -28,11 +30,13 @@ function SkillBadges({ skills }: { skills: string[] }) {
 
 export default function SkillsGrid({ groups }: { groups: SkillGroupData[] }) {
   const { ref: gridRef, isVisible } = useReveal<HTMLDivElement>();
+  const { language } = useLanguage();
 
   return (
     <div ref={gridRef} className="grid md:grid-cols-3 gap-8">
-      {groups.map(({ id, title, icon, skills, subgroups }, i) => {
+      {groups.map(({ id, titleEn, titleId, icon, skills, subgroups }, i) => {
         const Icon = resolveIcon(icon);
+        const title = language === 'en' ? titleEn : titleId;
         return (
           <div
             key={id}
@@ -46,10 +50,10 @@ export default function SkillsGrid({ groups }: { groups: SkillGroupData[] }) {
 
             {subgroups ? (
               <div className="space-y-4">
-                {subgroups.map(({ label, skills: subSkills }) => (
-                  <div key={label}>
+                {subgroups.map(({ labelEn, labelId, skills: subSkills }) => (
+                  <div key={labelEn}>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">
-                      {label}
+                      {language === 'en' ? labelEn : labelId}
                     </p>
                     <SkillBadges skills={subSkills} />
                   </div>
