@@ -113,6 +113,11 @@ Lib (src/lib/):
   blob.ts        - uploadProjectImage() / deleteProjectImage() (Vercel Blob)
   chatbot.ts     - buildSystemPrompt(): rangkai bio/highlights/skills/
                  projects dari Prisma jadi system prompt buat chatbot
+  site.ts         - konstanta SITE_URL/SITE_NAME/SITE_TITLE/SITE_DESCRIPTION/
+                 PERSON_NAME, dipakai bareng oleh layout.tsx (metadata),
+                 opengraph-image.tsx, robots.ts, sitemap.ts — SATU-SATUNYA
+                 tempat domain production di-hardcode, ganti di sini aja
+                 kalau nanti pindah/ganti domain (jangan cari-cari di 4 file)
 
 API routes:
   api/contact/route.ts - kirim email lewat Resend
@@ -120,6 +125,22 @@ API routes:
                         rate-limit in-memory per IP (~10 pesan/menit, best-
                         effort saja), riwayat dibatasi 12 pesan terakhir,
                         tiap pesan dipotong 500 karakter
+
+SEO (src/app/):
+  layout.tsx (metadata)  - title/description/keywords/canonical/openGraph/
+                         twitter, metadataBase dari SITE_URL (WAJIB diisi
+                         supaya og:image URL-nya absolute, bukan relative)
+  opengraph-image.tsx     - OG image 1200x630 DIGENERATE dinamis pakai
+                         `ImageResponse` dari next/og (bukan file statis),
+                         style-nya inline (satori cuma dukung flexbox +
+                         subset CSS, TIDAK bisa pakai class Tailwind).
+                         Next.js OTOMATIS pasang og:image DAN twitter:image
+                         dari file ini (sudah dicek langsung di head HTML
+                         hasil build — twitter:image ikut ter-isi walau
+                         tidak ada twitter-image.tsx terpisah).
+  robots.ts / sitemap.ts  - disallow /admin, /login, /api dari crawler.
+                         Sitemap baru berisi "/" (situsnya 1 halaman/single-
+                         page, semua section diakses lewat anchor scroll)
 
 
 5. STATUS FITUR
@@ -142,6 +163,15 @@ API routes:
   About dari database (pakai kolom *En sebagai referensi — modelnya sendiri
   yang menyesuaikan bahasa balasan ke bahasa visitor), dan menolak sopan
   pertanyaan di luar topik portfolio (instruksinya di src/lib/chatbot.ts)
+- SEO dasar SUDAH ada: metadata lengkap (title/description/OG/twitter card),
+  OG image digenerate otomatis, robots.txt, sitemap.xml (lihat poin 4).
+  Domain production: https://sayyid-portfolio.vercel.app (src/lib/site.ts).
+- Tombol "Download CV" di Hero SUDAH lengkap: link ke `/CV_Sayyid_Ali.pdf`
+  (public/CV_Sayyid_Ali.pdf, 3 halaman — nama file SENGAJA dipertahankan
+  persis nama file aslinya, bukan diganti "resume.pdf", supaya pas
+  di-download browser-nya nyimpen dengan nama itu juga). Kalau mau update
+  CV, ganti isi file itu dengan nama file yang SAMA persis, tidak perlu
+  ubah kode (href-nya di HeroSection.tsx ikut nama file ini).
 - Field `tech`/`skills` di DB masih JSON string (peninggalan era SQLite),
   bukan native Postgres array — bisa disederhanakan kalau mau, tidak wajib
 - Cuma 1 admin user (dari seed), tidak ada registrasi/role/lupa-password

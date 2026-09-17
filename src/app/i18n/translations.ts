@@ -19,6 +19,7 @@ export const translations = {
       description:
         'Designing efficient and effective solutions to complex problems. Experienced in building scalable web applications with modern technologies.',
       ctaContact: 'Get In Touch',
+      ctaCv: 'Download CV',
       ctaWork: 'View My Work',
       ctaAdmin: 'Admin Dashboard',
     },
@@ -98,6 +99,7 @@ export const translations = {
       description:
         'Merancang solusi yang efisien dan tepat guna untuk masalah kompleks. Berpengalaman membangun aplikasi web yang skalabel dengan teknologi modern.',
       ctaContact: 'Hubungi Saya',
+      ctaCv: 'Unduh CV',
       ctaWork: 'Lihat Karya Saya',
       ctaAdmin: 'Dashboard Admin',
     },

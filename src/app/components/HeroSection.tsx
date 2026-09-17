@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
-import { Computer, ExternalLink, Mail, ArrowDown, LayoutDashboard } from 'lucide-react';
+import { Computer, ExternalLink, Mail, ArrowDown, LayoutDashboard, Download } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '../context/LanguageContext';
@@ -151,13 +151,23 @@ export default function HeroSection() {
                 variants={itemVariants}
                 className="flex gap-4 justify-center mb-12 flex-wrap"
               >
-                <a href="#contact" className="btn-gradient inline-block text-white px-12 py-4 font-semibold rounded-full">
+                <a href="#contact" className="btn-gradient w-56 flex items-center justify-center py-4 font-semibold rounded-full text-white">
                   {t.hero.ctaContact}
                 </a>
-                <a href="#projects" className="border-2 border-sky-500 text-sky-500 hover:bg-sky-500 hover:text-white px-12 py-4 font-semibold rounded-full transition-colors">
+                <a
+                  href="/CV_Sayyid_Ali.pdf"
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-56 flex items-center justify-center gap-2 py-4 font-semibold rounded-full bg-white text-slate-900 hover:bg-slate-100 transition-colors"
+                >
+                  <Download size={18} />
+                  {t.hero.ctaCv}
+                </a>
+                <a href="#projects" className="w-56 flex items-center justify-center py-4 font-semibold rounded-full border-2 border-sky-500 text-sky-500 hover:bg-sky-500 hover:text-white transition-colors">
                   {t.hero.ctaWork}
                 </a>
-                <Link href="/login" className="border-2 border-white/30 text-white hover:bg-white/10 px-12 py-4 font-semibold rounded-full flex items-center gap-2 transition-colors">
+                <Link href="/login" className="w-56 flex items-center justify-center gap-2 py-4 font-semibold rounded-full border-2 border-white/30 text-white hover:bg-white/10 transition-colors">
                   <LayoutDashboard size={18} />
                   {t.hero.ctaAdmin}
                 </Link>
