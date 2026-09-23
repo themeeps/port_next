@@ -8,7 +8,8 @@ chat. Detail konversi Bootstrap->Tailwind ada di style_note_tailwind.txt.
 ==============
 - Next.js 16.2.9 (App Router, Turbopack), React 19, TypeScript ^5
 - Tailwind CSS v4 — satu-satunya sistem styling (src/app/globals.css)
-- framer-motion — animasi scroll-jacking Hero
+- (framer-motion SUDAH DIHAPUS, lihat poin 6 — animasi scroll-jacking Hero
+  sekarang pure CSS transition, tidak ada dependency animasi lagi)
 - lucide-react — icon set. Versi ini TIDAK ada icon brand (Github/Linkedin
   dst). Cek node_modules/lucide-react/dist/lucide-react.d.ts sebelum pakai
   icon baru.
@@ -68,8 +69,27 @@ Homepage publik:
   layout.tsx             - root layout, bungkus <LanguageProvider>
   globals.css             - satu-satunya CSS, semua class custom pakai @apply
   HeroSection.tsx          - scroll-jacking: wheel/touch di-intercept, step
-                           0-6 kontrol reveal framer-motion. Foto avatar +
-                           heading pakai next/image (lihat poin 6 soal LCP).
+                           0-6 kontrol reveal elemen (avatar/heading/tagline/
+                           deskripsi/tombol/social) SATU-SATU. UPDATE: reveal-
+                           nya DULU pakai framer-motion (motion.div + variants
+                           + AnimatePresence), SEKARANG murni CSS Tailwind
+                           (`transition-all duration-500 ease-[cubic-bezier(
+                           0.34,1.56,0.64,1)]` + toggle class opacity/
+                           translate-y berdasar `step`, sama persis timing &
+                           easing-nya kayak versi lama) — framer-motion
+                           di-uninstall total dari project (cuma dipakai di
+                           sini), hemat ~144KB JS yang sebelumnya WAJIB
+                           di-download tiap kali homepage dibuka (Hero itu
+                           above-the-fold, tidak bisa di-lazy-load). Transisi
+                           greeting<->content (yang DULU pakai AnimatePresence
+                           mode="wait") SEKARANG dua screen-nya SAMA-SAMA selalu
+                           ada di DOM, ditumpuk pakai `absolute inset-0` di
+                           dalam `.hero-section` (yang sudah `position:
+                           relative` dari sono), saling crossfade opacity —
+                           yang lagi tidak aktif dikasih `pointer-events-none`
+                           + `aria-hidden` biar tidak collision klik/
+                           accessibility. Foto avatar + heading pakai
+                           next/image (lihat poin 6 soal LCP).
   AboutSection/SkillsSection/ProjectsSection.tsx
                           - server component, fetch Prisma langsung
   SkillsGrid.tsx / ProjectsGrid.tsx
@@ -111,6 +131,18 @@ Lib (src/lib/):
   icons.ts      - allow-list nama icon lucide-react + resolveIcon()
   require-admin.ts - requireAdmin(), dipanggil di tiap Server Action mutasi
   blob.ts        - uploadProjectImage() / deleteProjectImage() (Vercel Blob)
+  image-compress.ts - compressImage(): CLIENT-SIDE saja (pakai
+                 createImageBitmap + <canvas>), resize max width 1600px +
+                 re-encode ke WebP quality 0.8 SEBELUM file dikirim ke
+                 Server Action. Dipanggil dari ProjectForm.tsx pas admin
+                 pilih file gambar — hasil compressed-nya "disuntikkan"
+                 balik ke `<input type="file">` pakai trik `DataTransfer`
+                 (`input.files = dataTransfer.files`), jadi Server Action
+                 di actions.ts TIDAK PERLU DIUBAH SAMA SEKALI, tetap baca
+                 `formData.get('image')` seperti biasa. GIF dilewati
+                 (redraw ke canvas bikin animasinya hilang). Fallback ke
+                 file asli kalau compress gagal atau hasilnya malah lebih
+                 besar dari aslinya.
   chatbot.ts     - buildSystemPrompt(): rangkai bio/highlights/skills/
                  projects dari Prisma jadi system prompt buat chatbot
   site.ts         - konstanta SITE_URL/SITE_NAME/SITE_TITLE/SITE_DESCRIPTION/
@@ -150,6 +182,11 @@ SEO (src/app/):
   di translations.ts / hardcoded)
 - Upload gambar cuma ada untuk Project screenshot. Foto profil About & foto
   Hero masih file statis di /public/images (belum ada field DB-nya)
+- Upload screenshot project SEKARANG otomatis di-resize+compress ke WebP di
+  BROWSER sebelum dikirim (lihat src/lib/image-compress.ts di poin 4) — jadi
+  baik gambar lama (next/image, lihat poin 13) MAUPUN gambar baru yang
+  di-upload sekarang sama-sama sudah dioptimasi, tidak ada lagi "gambar
+  mentah" yang numpuk besar di Blob storage.
 - Toggle bahasa EN/ID SEKARANG translate SEMUA teks deskriptif, termasuk
   konten database: Project (judul+deskripsi), SkillGroup (judul) + Skill-
   Subgroup (label), About (bio + judul+deskripsi tiap highlight). Field-nya

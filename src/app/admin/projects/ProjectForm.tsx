@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ICON_NAMES } from '@/lib/icons';
+import { compressImage } from '@/lib/image-compress';
 import { useAdminForm } from '../useAdminForm';
 import type { ActionResult } from '../actionResult';
 
@@ -29,10 +30,27 @@ export default function ProjectForm({
 }) {
   const { formAction, isPending } = useAdminForm(action, redirectTo);
   const [preview, setPreview] = useState<string | null>(defaultValues?.image ?? null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    setPreview(file ? URL.createObjectURL(file) : (defaultValues?.image ?? null));
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const file = input.files?.[0];
+    if (!file) {
+      setPreview(defaultValues?.image ?? null);
+      return;
+    }
+
+    setIsCompressing(true);
+    const compressed = await compressImage(file);
+    setIsCompressing(false);
+
+    setPreview(URL.createObjectURL(compressed));
+
+    // Replace the input's FileList with the compressed version so the Server
+    // Action (reading formData.get('image')) picks it up transparently.
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(compressed);
+    input.files = dataTransfer.files;
   };
 
   return (
@@ -116,8 +134,14 @@ export default function ProjectForm({
           className="form-control w-full rounded-lg border border-slate-200 px-4 py-3 outline-none file:mr-4 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium"
         />
         <p className="text-slate-500 text-sm mt-1">
-          JPEG, PNG, WEBP, or GIF, up to 5MB.{' '}
-          {defaultValues?.image ? 'Leave empty to keep the current screenshot.' : ''}
+          {isCompressing
+            ? 'Compressing image...'
+            : (
+              <>
+                JPEG, PNG, WEBP, or GIF, up to 5MB — automatically compressed before upload.{' '}
+                {defaultValues?.image ? 'Leave empty to keep the current screenshot.' : ''}
+              </>
+            )}
         </p>
       </div>
 
@@ -165,10 +189,10 @@ export default function ProjectForm({
 
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || isCompressing}
         className="btn-gradient text-white px-6 py-3 rounded-lg font-semibold disabled:opacity-60"
       >
-        {isPending ? 'Saving...' : 'Save'}
+        {isPending ? 'Saving...' : isCompressing ? 'Compressing...' : 'Save'}
       </button>
     </form>
   );
