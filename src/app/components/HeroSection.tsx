@@ -104,11 +104,11 @@ export default function HeroSection() {
         }`}
         aria-hidden={step === 0}
       >
-        <div className="max-w-6xl mx-auto px-4 pt-24 md:pt-0 pb-24 md:pb-0 relative z-10 w-full">
+        <div className="max-w-6xl mx-auto px-4 pt-12 md:pt-0 pb-3 md:pb-0 relative z-10 w-full">
           <div className="max-w-4xl mx-auto text-center">
-            <div className={`mb-6 ${revealClass(0)}`}>
+            <div className={`mb-3 md:mb-6 ${revealClass(0)}`}>
               <div className="inline-block p-1 rounded-full bg-gradient-primary">
-                <div className="bg-slate-900 rounded-full flex items-center justify-center text-gradient font-bold w-41.25 h-52.25 text-5xl">
+                <div className="bg-slate-900 rounded-full flex items-center justify-center text-gradient font-bold w-28 h-36 md:w-41.25 md:h-52.25 text-5xl">
                   <Image
                     src="/images/formal_photo.jpeg"
                     className="rounded-full"
@@ -121,18 +121,18 @@ export default function HeroSection() {
               </div>
             </div>
 
-            <h1 className={`text-5xl md:text-6xl font-bold text-white mb-4 ${revealClass(1)}`}>
+            <h1 className={`text-4xl md:text-6xl font-bold text-white mb-2 md:mb-4 ${revealClass(1)}`}>
               {t.hero.introPre} <span className="text-gradient">Sayyid Ali Akbar H</span>
             </h1>
 
-            <p className={`text-2xl text-white/50 mb-6 ${revealClass(2)}`}>{t.hero.tagline}</p>
+            <p className={`text-lg md:text-2xl text-white/50 mb-2 md:mb-6 ${revealClass(2)}`}>{t.hero.tagline}</p>
 
-            <p className={`text-xl text-slate-400 mb-12 mx-auto max-w-150 ${revealClass(3)}`}>
+            <p className={`text-base md:text-xl text-slate-400 mb-4 md:mb-12 mx-auto max-w-150 ${revealClass(3)}`}>
               {t.hero.description}
             </p>
 
-            <div className={`flex gap-4 justify-center mb-12 flex-wrap ${revealClass(4)}`}>
-              <a href="#contact" className="btn-gradient w-56 flex items-center justify-center py-4 font-semibold rounded-full text-white">
+            <div className={`grid grid-cols-2 gap-2 mb-4 md:flex md:gap-4 md:justify-center md:mb-12 md:flex-wrap ${revealClass(4)}`}>
+              <a href="#contact" className="btn-gradient w-full md:w-56 flex items-center justify-center py-3 md:py-4 text-sm md:text-base font-semibold rounded-full text-white">
                 {t.hero.ctaContact}
               </a>
               <a
@@ -140,29 +140,29 @@ export default function HeroSection() {
                 download
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-56 flex items-center justify-center gap-2 py-4 font-semibold rounded-full bg-white text-slate-900 hover:bg-slate-100 transition-colors"
+                className="w-full md:w-56 flex items-center justify-center gap-2 py-3 md:py-4 text-sm md:text-base font-semibold rounded-full bg-white text-slate-900 hover:bg-slate-100 transition-colors"
               >
-                <Download size={18} />
+                <Download size={16} className="md:w-4.5 md:h-4.5" />
                 {t.hero.ctaCv}
               </a>
-              <a href="#projects" className="w-56 flex items-center justify-center py-4 font-semibold rounded-full border-2 border-sky-500 text-sky-500 hover:bg-sky-500 hover:text-white transition-colors">
+              <a href="#projects" className="w-full md:w-56 flex items-center justify-center py-3 md:py-4 text-sm md:text-base font-semibold rounded-full border-2 border-sky-500 text-sky-500 hover:bg-sky-500 hover:text-white transition-colors">
                 {t.hero.ctaWork}
               </a>
-              <Link href="/login" className="w-56 flex items-center justify-center gap-2 py-4 font-semibold rounded-full border-2 border-white/30 text-white hover:bg-white/10 transition-colors">
-                <LayoutDashboard size={18} />
+              <Link href="/login" className="w-full md:w-56 flex items-center justify-center gap-2 py-3 md:py-4 text-sm md:text-base font-semibold rounded-full border-2 border-white/30 text-white hover:bg-white/10 transition-colors">
+                <LayoutDashboard size={16} className="md:w-4.5 md:h-4.5" />
                 {t.hero.ctaAdmin}
               </Link>
             </div>
 
-            <div className={`flex gap-6 justify-center ${revealClass(5)}`}>
+            <div className={`flex gap-4 md:gap-6 justify-center ${revealClass(5)}`}>
               <a href="https://github.com/themeeps" target="_blank" rel="noopener noreferrer" className="social-icon no-underline">
-                <Computer size={28} />
+                <Computer size={22} className="md:w-7 md:h-7" />
               </a>
               <a href="https://www.linkedin.com/in/sayyid-ali-a5722b201" target="_blank" rel="noopener noreferrer" className="social-icon no-underline">
-                <ExternalLink size={28} />
+                <ExternalLink size={22} className="md:w-7 md:h-7" />
               </a>
               <a href="mailto:sayyidali195@gmail.com" className="social-icon no-underline">
-                <Mail size={28} />
+                <Mail size={22} className="md:w-7 md:h-7" />
               </a>
             </div>
           </div>

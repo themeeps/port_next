@@ -90,6 +90,35 @@ Homepage publik:
                            + `aria-hidden` biar tidak collision klik/
                            accessibility. Foto avatar + heading pakai
                            next/image (lihat poin 6 soal LCP).
+  - BUG PENTING yang ditemukan & diperbaiki (mobile, layar pendek): `.hero-
+    section` punya `overflow-hidden` (buat nahan blob dekorasi background)
+    DAN kontennya `position: absolute` di-center vertikal (bukan normal
+    document flow) DI DALAM `min-h-screen`. Kalau total tinggi konten
+    (avatar+heading+tagline+deskripsi+tombol+social) lebih tinggi dari
+    viewport (gampang kejadian di HP pendek, apalagi setelah tombol "Download
+    CV" nambah jadi 4 tombol yang numpuk vertikal), bagian yang "meluber"
+    JADI TIDAK BISA DIAKSES SAMA SEKALI — ke-potong overflow-hidden, DAN
+    scroll beneran masih dikunci sama mekanisme scroll-jacking sampai step
+    terakhir. User sempat laporan "bagian mobile-nya kepotong". Diperbaiki
+    dengan 2 cara: (1) 4 tombol CTA sekarang `grid grid-cols-2` di mobile
+    (2 kolom x 2 baris, bukan numpuk 4 baris) pakai `w-full md:w-56` (lebar
+    seragam w-56 TETAP dipertahankan di desktop sesuai request sebelumnya),
+    (2) avatar/heading/tagline/deskripsi/padding/gap SEMUA dikecilkan khusus
+    mobile (varian `md:` tetap ukuran lama). Hasil: tinggi konten total
+    turun dari ~987px jadi ~568px, muat di viewport pendek (diverifikasi
+    pakai Playwright, ukur `boundingBox()` beneran, bukan cuma lihat
+    screenshot). PELAJARAN: kalau nambah elemen baru ke Hero (tombol, badge,
+    dst), WAJIB test juga di viewport mobile PENDEK (~650px ke bawah, bukan
+    cuma 844px standar iPhone) karena scroll-jacking + overflow-hidden bikin
+    konten yang kepotong itu BENERAN tidak bisa diakses user, bukan cuma
+    soal estetika.
+  - ChatbotButton.tsx (floating, lihat poin 12) ukurannya dikecilkan dikit
+    khusus mobile (`w-12 h-12` vs `w-14 h-14` desktop) karena di layar
+    sempit dia bisa numpuk tipis di pojok tombol "Admin Dashboard" — sudah
+    jauh berkurang tapi SECARA TEKNIS masih bisa overlap beberapa piksel di
+    pojok pada viewport yang SANGAT pendek (~600px), dianggap acceptable
+    karena cuma di pojok (bukan area teks/ikon tombol) dan chat button-nya
+    bulat (area overlap riil lebih kecil dari bounding box persegi).
   AboutSection/SkillsSection/ProjectsSection.tsx
                           - server component, fetch Prisma langsung
   SkillsGrid.tsx / ProjectsGrid.tsx
